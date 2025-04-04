@@ -1,0 +1,18 @@
+---
+- destination_url: 'https://maps.app.goo.gl/gvZkosVY13E1WAg89'
+  birds:
+    - username: 'yura'
+      message: 'omw!1'
+      estimated_time: 1800
+    - username: 'oleg'
+      message: 'traffic(('
+      estimated_time: 1900
+      
+- destination_url: 'https://maps.app.goo.gl/KPNsGnHsCC4cjXGLA'
+  birds:
+    - username: 'irina'
+      message: 'running late'
+      estimated_time: 450
+    - username: 'yura'
+      message: 'here'
+      estimated_time: 0
