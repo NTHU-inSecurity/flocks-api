@@ -37,11 +37,37 @@ module Flocks
               routing.halt(404, { message: 'Flock not found' }.to_json)
             end
 
+            # GET api/v1/flocks/[id]/[username]
+            routing.get String, String do |id, username|
+              response.status = 200
+              flock = Flock.find(id)
+              bird = flock.find_by_username(username)
+              bird.to_json
+            rescue StandardError
+              routing.halt(404, { message: 'Bird not found' }.to_json)
+            end
+
             # GET api/v1/flocks
             routing.get do
               response.status = 200
               output = { flock_ids: Flock.all }
               JSON.pretty_generate(output)
+            end
+
+            # POST api/v1/flocks/[id]/[username]
+            # only update message
+            routing.post String, String do |id, username|
+              new_data = JSON.parse(routing.body.read)
+
+              flock = Flock.find(id)
+              flock.update_bird(username, new_data)
+
+              if flock.save
+                response.status = 201
+                flock.to_json
+              else
+                routing.halt(400, { message: 'Could not update the flock data' }.to_json)
+              end
             end
 
             # POST api/v1/flocks

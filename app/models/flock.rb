@@ -43,6 +43,16 @@ module Flocks
       Flock.new(JSON.parse(flock_file))
     end
 
+    def find_by_username(find_name)
+      bird = @birds.find { |b| b.username == find_name }
+      bird.to_h
+    end
+
+    def update_bird(find_name, new_data)
+      bird = @birds.find { |b| b.username == find_name }
+      bird.message = new_data['message'] if bird
+    end
+
     def self.all
       Dir.glob("#{Flocks::STORE_DIR}/*.txt").map do |file|
         File.basename(file, '.txt')

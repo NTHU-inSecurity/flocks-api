@@ -6,13 +6,20 @@ module Flocks
     def initialize(bird)
       @username = bird['username']
       @message = bird['message']
-      @estiamted_time = bird['estimated_time']
+      @latitude = bird['latitude']
+      @longitude = bird['longitude']
+      @estimated_time = bird['estimated_time']
     end
+
+    attr_reader :username
+    attr_accessor :message, :latitude, :longitude, :estiamted_time
 
     def to_h
       {
         username: @username,
         message: @message,
+        latitude: @latitude,
+        longitude: @longitude,
         estiamted_time: @estiamted_time
       }
     end
