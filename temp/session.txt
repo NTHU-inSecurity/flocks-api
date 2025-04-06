@@ -1,0 +1,7 @@
+session.rb is a thin wrapper around Google map API. Once the API is added to the environment variable, one can run the test file.
+
+Example output:
+
+Session saved successfully!
+Retrieved session content:
+{"type":"session","session_id":"SLxhFGsuci","members":["Alice","Bob"],"duration":30,"target_address":"1600 Amphitheatre Parkway, Mountain View, CA","user_location":{"lat":37.422,"lng":-122.084},"target_location":{"lat":37.422011,"lng":-122.0847484}}
