@@ -16,6 +16,7 @@ gem 'rbnacl', '~>7.0'
 gem 'minitest', '~>5.0'
 gem 'minitest-rg', '~>5.0'
 gem 'rack-test', '~>2.0'
+gem 'rspec', '~> 3.12'
 
 # DEVELOPMENT
 gem 'bundler-audit'
@@ -25,3 +26,5 @@ gem 'reek'
 gem 'rerun'
 gem 'rubocop'
 gem 'rubocop-minitest'
+
+
