@@ -12,7 +12,7 @@ module Flocks
     end
 
     attr_reader :username
-    attr_accessor :message, :latitude, :longitude, :estiamted_time
+    attr_accessor :message, :latitude, :longitude, :estimated_time
 
     def to_h
       {
@@ -20,7 +20,7 @@ module Flocks
         message: @message,
         latitude: @latitude,
         longitude: @longitude,
-        estiamted_time: @estiamted_time
+        estimated_time: @estimated_time
       }
     end
   end
