@@ -31,8 +31,6 @@ module Flocks
       )
     end
     # rubocop:enable Metrics/MethodLength
-    
-    # 為了向後兼容，保留 to_h 方法
     def to_h
       {
         username:,
