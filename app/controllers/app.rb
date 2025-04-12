@@ -15,7 +15,7 @@ module Flocks
 
     # runs at application startup
     configure do
-      Flock.setup
+      # Flock.setup
     end
 
     route do |routing| # rubocop:disable Metrics/BlockLength
@@ -32,9 +32,12 @@ module Flocks
             # GET api/v1/flocks/[id]
             routing.get String do |id|
               response.status = 200
-              Flock.find(id).to_json
-            rescue StandardError
-              routing.halt(404, { message: 'Flock not found' }.to_json)
+              flock = Flock[id]
+              raise StandardError, 'Flock not found' unless flock
+              
+              flock.to_json
+            rescue StandardError => e
+              routing.halt(404, { message: e.message }.to_json)
             end
 
             # GET api/v1/flocks/[id]/[username]
