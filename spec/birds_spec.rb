@@ -7,8 +7,6 @@ describe 'Test Document Handling' do
 
   before do
     wipe_database
-    # 創建測試項目，未來文檔會關聯到項目
-    # @project = Flocks::Project.create(DATA[:projects][0])
   end
 
   it 'PLACEHOLDER: GET documents endpoint should exist' do
