@@ -9,8 +9,22 @@ gem 'logger', '~>1.0'
 gem 'puma', '~>6.0'
 gem 'roda', '~>3.0'
 
+# CONFIGURATION
+gem 'figaro', '~>1.2'
+gem 'rake'
+
 # SECURITY
 gem 'rbnacl', '~>7.0'
+
+# DATABASE
+gem 'hirb'
+gem 'sequel', '~>5.55'
+group :development, :test do
+  gem 'sqlite3', '~>1.4'
+end
+
+# PERFORMANCE
+gem 'rubocop-performance'
 
 # TESTING
 gem 'minitest', '~>5.0'
