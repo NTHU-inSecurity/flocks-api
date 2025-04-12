@@ -6,7 +6,7 @@ Sequel.migration do
             primary_key :id # this is flock_id
 
             # String :flock_id, null: false, unique: true
-            String :destination_url
+            String :destination_url, null: false
 
             DateTime :created_at
             DateTime :updated_at

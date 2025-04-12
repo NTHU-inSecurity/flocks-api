@@ -12,7 +12,7 @@ module Flocks
     # load config secrets into local environment variables (ENV)
     Figaro.application = Figaro::Application.new(
       environment: environment,
-      path: File.expand_path('config/secrets.yml')
+      path: File.expand_path('config/secrets_example.yml')
     )
     Figaro.load
 
