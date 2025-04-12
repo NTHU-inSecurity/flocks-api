@@ -1,0 +1,8 @@
+---
+- filename: "secrets.yml"
+  description: "API file"
+  content: "database_url: sqlite://db/local/test.db"
+
+- filename: "config.yml"
+  description: "app file"
+  content: "---\nserver_port: 9292\nlog_level: info\nmax_connections: 100"

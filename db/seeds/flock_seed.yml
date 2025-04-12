@@ -1,0 +1,8 @@
+---
+- name: "Flocks API"
+  repo_url: "https://github.com/user/flocks-api"
+  description: "use for sharing and tracking location data"
+
+- name: "Flocks Web"
+  repo_url: "https://github.com/user/flocks-mobile"
+  description: "web for sharing and tracking location data"
