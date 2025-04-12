@@ -1,70 +1,73 @@
 # frozen_string_literal: true
 
 require 'json'
-require 'rbnacl'
-require 'base64'
-
-require_relative 'bird'
+require 'sequel'
 
 module Flocks
-  STORE_DIR = 'db/local'
-  # Holds a full secret url
-  class Flock
-    def initialize(flock)
-      @flock_id = flock['flock_id'] || new_flock_id
-      @destination_url = flock['destination_url']
-      @birds = (flock['birds'] || []).map { |bird_data| Bird.new(bird_data) }
+  # Models a flock (group) with destination
+  class Flock < Sequel::Model
+    one_to_many :birds
+    plugin :association_dependencies, birds: :destroy
+    plugin :timestamps, update_on_create: true
+
+    unrestrict_primary_key
+
+    def birds=(bird_data_array)
+      return unless bird_data_array
+
+      save if new?
+      bird_data_array.each do |bird_data|
+        add_bird(bird_data)
+      end
     end
-
-    attr_reader :flock_id, :destination_url
-
+    
+    # rubocop:disable Metrics/MethodLength
     def to_json(options = {})
       JSON(
         {
-          type: 'flock',
-          flock_id:,
-          destination_url:,
-          birds: @birds.map(&:to_h)
-        },
-        options
+          data: {
+            type: 'flock',
+            attributes: {
+              id:id ,
+              destination_url:
+            }
+          }
+        }, options
       )
     end
-
-    def self.setup
-      FileUtils.mkdir_p(Flocks::STORE_DIR)
+    # rubocop:enable Metrics/MethodLength
+    
+    # 為了向後兼容，提供 flock_id 方法
+    def flock_id
+      id
     end
-
-    def save
-      File.write("#{Flocks::STORE_DIR}/#{flock_id}.txt", to_json)
-    end
-
-    def self.find(find_flock_id)
-      flock_file = File.read("#{Flocks::STORE_DIR}/#{find_flock_id}.txt")
-      Flock.new(JSON.parse(flock_file))
-    end
-
+    
+    # 查找特定用戶名的鳥
     def find_by_username(find_name)
-      bird = @birds.find { |b| b.username == find_name }
+      bird = birds_dataset.first(username: find_name)
+      return {} unless bird
+      
       bird.to_h
     end
-
+    
+    # 更新鳥的信息
     def update_bird(find_name, new_data)
-      bird = @birds.find { |b| b.username == find_name }
-      bird.message = new_data['message'] if bird
+      bird = birds_dataset.first(username: find_name)
+      return unless bird
+      
+      bird.update(message: new_data['message']) if new_data['message']
     end
-
-    def self.all
-      Dir.glob("#{Flocks::STORE_DIR}/*.txt").map do |file|
-        File.basename(file, '.txt')
-      end
-    end
-
-    private
-
-    def new_flock_id
-      timestamp = Time.now.to_f.to_s
-      # compute the SHA-256 digest of the timestamp
-      Base64.urlsafe_encode64(RbNaCl::Hash.sha256(timestamp))[0..9]
+    
+    # 添加新的鳥
+    def add_bird(bird_data)
+      birds_dataset.insert(
+        username: bird_data['username'],
+        message: bird_data['message'],
+        latitude: bird_data['latitude'],
+        longitude: bird_data['longitude'],
+        estimated_time: bird_data['estimated_time'],
+        flock_id: id
+      )
     end
   end
 end
