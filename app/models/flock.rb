@@ -8,9 +8,7 @@ module Flocks
   class Flock < Sequel::Model
     one_to_many :birds
     plugin :association_dependencies, birds: :destroy
-    plugin :timestamps, update_on_create: true
-
-    unrestrict_primary_key
+    plugin :timestamps
 
     def birds=(bird_data_array)
       return unless bird_data_array
