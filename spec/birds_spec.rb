@@ -2,16 +2,24 @@
 
 require_relative 'spec_helper'
 
-describe 'Test Document Handling' do
+describe 'Test Bird Handling' do
   include Rack::Test::Methods
 
   before do
     wipe_database
+
+    DATA[:flocks].each do |flock_data|
+      Flocks::Flock.create(flock_data)
+    end
   end
 
-  it 'PLACEHOLDER: GET documents endpoint should exist' do
-    skip 'Implement GET /api/v1/documents endpoint'
-    get 'api/v1/documents'
+  it 'HAPPY: should be able to get list of all birds' do
+    flock = Flocks::Flock.first
+    DATA[:birds].each do |bird|
+      flock.add_bird(bird)
+    end
+    
+    get "api/v1/flocks/#{flock.id}/birds"
     _(last_response.status).must_equal 200
   end
 
