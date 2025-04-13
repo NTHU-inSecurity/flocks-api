@@ -1,8 +1,11 @@
 ---
-- filename: "secrets.yml"
-  description: "API file"
-  content: "database_url: sqlite://db/local/test.db"
-
-- filename: "config.yml"
-  description: "app file"
-  content: "---\nserver_port: 9292\nlog_level: info\nmax_connections: 100"
+- username: "altaf"
+  message: "Flying high!"
+  latitude: 12.345
+  longitude: 67.890
+  estimated_time: 10
+- username: "crazyfrog"
+  message: "omw"
+  latitude: 12.1
+  longitude: 12.0
+  estimated_time: 15
