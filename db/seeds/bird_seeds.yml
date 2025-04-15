@@ -1,8 +1,14 @@
 ---
-- filename: "secrets.yml"
-  description: "API file"
-  content: "database_url: sqlite://db/local/test.db"
+- username: "testuser1"
+  message: "test message 1"
+  latitude: 24.7
+  longitude: 121.0
+  estimated_time: 1200
+  flock_id: 1
 
-- filename: "config.yml"
-  description: "app file"
-  content: "---\nserver_port: 9292\nlog_level: info\nmax_connections: 100"
+- username: "testuser2"
+  message: "test message 2"
+  latitude: 24.8
+  longitude: 121.1
+  estimated_time: 600
+  flock_id: 2

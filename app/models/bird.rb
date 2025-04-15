@@ -31,14 +31,6 @@ module Flocks
       )
     end
     # rubocop:enable Metrics/MethodLength
-    def to_h
-      {
-        username:,
-        message:,
-        latitude:,
-        longitude:,
-        estimated_time:
-      }
-    end
+    
   end
 end

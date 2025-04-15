@@ -8,19 +8,8 @@ module Flocks
   class Flock < Sequel::Model
     one_to_many :birds
     plugin :association_dependencies, birds: :destroy
-    plugin :timestamps, update_on_create: true
+    plugin :timestamps
 
-    unrestrict_primary_key
-
-    def birds=(bird_data_array)
-      return unless bird_data_array
-
-      save if new?
-      bird_data_array.each do |bird_data|
-        add_bird(bird_data)
-      end
-    end
-    
     # rubocop:disable Metrics/MethodLength
     def to_json(options = {})
       JSON(
@@ -35,35 +24,14 @@ module Flocks
         }, options
       )
     end
+
+    private
+
+    def new_flock_id
+      timestamp = Time.now.to_f.to_s
+      # compute the SHA-256 digest of the timestamp
+      Base64.urlsafe_encode64(RbNaCl::Hash.sha256(timestamp))[0..9]
+    end
     # rubocop:enable Metrics/MethodLength
-    
-    def flock_id
-      id
-    end
-    
-    def find_by_username(find_name)
-      bird = birds_dataset.first(username: find_name)
-      return {} unless bird
-      
-      bird.to_h
-    end
-    
-    def update_bird(find_name, new_data)
-      bird = birds_dataset.first(username: find_name)
-      return unless bird
-      
-      bird.update(message: new_data['message']) if new_data['message']
-    end
-    
-    def add_bird(bird_data)
-      birds_dataset.insert(
-        username: bird_data['username'],
-        message: bird_data['message'],
-        latitude: bird_data['latitude'],
-        longitude: bird_data['longitude'],
-        estimated_time: bird_data['estimated_time'],
-        flock_id: id
-      )
-    end
   end
 end

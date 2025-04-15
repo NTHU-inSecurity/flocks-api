@@ -8,11 +8,11 @@ require 'yaml'
 
 require_relative 'test_load_all'
 
-def app
-  Flocks::Api
+def wipe_database
+  app.DB[:birds].delete
+  app.DB[:flocks].delete
 end
 
-unless app.environment == :production
-  require 'rack/test'
-  include Rack::Test::Methods # rubocop:disable Style/MixinUsage
-end
+DATA = {} # rubocop:disable Style/MutableConstant
+DATA[:birds] = YAML.safe_load_file('db/seeds/bird_seeds.yml')
+DATA[:flocks] = YAML.safe_load_file('db/seeds/flock_seeds.yml')
