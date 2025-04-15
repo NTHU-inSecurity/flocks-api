@@ -18,7 +18,7 @@ end
 
 desc 'Runs rubocop on tested code'
 task style: %i[spec audit] do
-  sh 'rubocop .'
+  sh 'rubocop -A .'
 end
 
 desc 'Update vulnerabilities lit and audit gems'
@@ -40,7 +40,7 @@ task console: :print_env do
   sh 'pry -r ./spec/test_load_all'
 end
 
-namespace :db do
+namespace :db do # rubocop:disable Metrics/BlockLength
   task :load do
     require_app(nil) # load nothing by default
     require 'sequel'

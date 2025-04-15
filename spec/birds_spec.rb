@@ -30,8 +30,8 @@ describe 'Test Bird Handling' do
     bird_data = DATA[:birds][1]
     flock = Flocks::Flock.first
 
-    bird = flock.add_bird(bird_data).save # rubocop:disable Sequel/SaveChanges
-    
+    bird = flock.add_bird(bird_data).save
+
     get "/api/v1/flocks/#{flock.id}/birds/#{bird.username}"
     _(last_response.status).must_equal 200
 

@@ -9,7 +9,7 @@ module Flocks
   class Api < Roda
     plugin :halt
 
-    route do |routing|
+    route do |routing| # rubocop:disable Metrics/BlockLength
       response['Content-Type'] = 'application/json'
 
       routing.root do
@@ -17,12 +17,12 @@ module Flocks
       end
 
       @api_root = 'api/v1'
-      routing.on @api_root do
-        routing.on 'flocks' do
+      routing.on @api_root do # rubocop:disable Metrics/BlockLength
+        routing.on 'flocks' do # rubocop:disable Metrics/BlockLength
           @flock_route = "#{@api_root}/flocks"
 
-          routing.on String do |flock_id|
-            routing.on 'birds' do
+          routing.on String do |flock_id| # rubocop:disable Metrics/BlockLength
+            routing.on 'birds' do # rubocop:disable Metrics/BlockLength
               @bird_route = "#{@api_root}/flocks/#{flock_id}/birds"
               # GET api/v1/flocks/[flock_id]/birds/[username]
               routing.get String do |username|

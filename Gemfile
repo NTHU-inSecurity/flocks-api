@@ -40,5 +40,3 @@ gem 'reek'
 gem 'rerun'
 gem 'rubocop'
 gem 'rubocop-minitest'
-
-
