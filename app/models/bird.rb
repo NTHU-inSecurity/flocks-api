@@ -1,27 +1,35 @@
 # frozen_string_literal: true
 
+require 'json'
+require 'sequel'
+
 module Flocks
-  # Holds a single bird data
-  class Bird
-    def initialize(bird)
-      @username = bird['username']
-      @message = bird['message']
-      @latitude = bird['latitude']
-      @longitude = bird['longitude']
-      @estimated_time = bird['estimated_time']
-    end
+  # Models a bird (user) in a flock
+  class Bird < Sequel::Model
+    many_to_one :flock
+    plugin :timestamps
 
-    attr_reader :username
-    attr_accessor :message, :latitude, :longitude, :estimated_time
-
-    def to_h
-      {
-        username: @username,
-        message: @message,
-        latitude: @latitude,
-        longitude: @longitude,
-        estimated_time: @estimated_time
-      }
+    # rubocop:disable Metrics/MethodLength
+    def to_json(options = {})
+      JSON(
+        {
+          data: {
+            type: 'bird',
+            attributes: {
+              id:,
+              username:,
+              message:,
+              latitude:,
+              longitude:,
+              estimated_time:
+            }
+          },
+          included: {
+            flock:
+          }
+        }, options
+      )
     end
+    # rubocop:enable Metrics/MethodLength
   end
 end

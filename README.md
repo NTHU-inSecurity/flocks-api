@@ -44,7 +44,22 @@ Foe example, when friends decide to meet at a restaurant, one user can pin the l
 
 ### Running Test
 
-- ruby spec/api_spec.rb
+Setup test database for once
+
+- RACK_ENV=test rake db:migrate
+
+Run the test specification script in Rakefile:
+
+- rake spec
+
+### Test type
+
+- api_spec.rb: Testing api function and message.
+- env_spec.rb: Testing for environment setting.
+- flock_spec.rb: Testing the functionality of the Flock model.
+- bird_spec.rb: Testing the functionality of the Bird model.
+- spec_helper.rb: Provides common configuration for testing.
+- test_load_all.rb: Setting the foundation for the test environment.
 
 ## API Endpoints
 
