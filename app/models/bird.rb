@@ -9,6 +9,12 @@ module Flocks
     many_to_one :flock
     plugin :timestamps
 
+    # white list of attributes
+    plugin :whitelist_security
+
+    # whitelist the attributes we want to allow
+    set_allowed_columns :username, :message, :latitude, :longitude, :estimated_time, :flock_id
+
     # rubocop:disable Metrics/MethodLength
     def to_json(options = {})
       JSON(
