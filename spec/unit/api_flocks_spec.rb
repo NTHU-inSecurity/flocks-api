@@ -6,7 +6,7 @@ describe 'Test Flock Handling' do
   include Rack::Test::Methods
 
   before do
-    wipe_database  
+    wipe_database
   end
 
   describe 'Getting flocks' do
@@ -44,7 +44,6 @@ describe 'Test Flock Handling' do
       Flocks::Flock.create(destination_url: 'https://maps.app.goo.gl/location1')
       Flocks::Flock.create(destination_url: 'https://maps.app.goo.gl/location2')
       get 'api/v1/flocks/2%20or%20id%3E0'
-      
       _(last_response.status).must_equal 404
     end
   end

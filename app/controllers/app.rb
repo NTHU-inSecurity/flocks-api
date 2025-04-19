@@ -16,7 +16,6 @@ module Flocks
       end
     end
 
-
     route do |routing| # rubocop:disable Metrics/BlockLength
       response['Content-Type'] = 'application/json'
 
@@ -41,14 +40,15 @@ module Flocks
                 routing.halt 404, { message: e.message }.to_json
               end
 
-              # GET api/v1/flocks/[flock_id]/birds
               routing.get do
                 # SQL injection prevention :check ID for validity
-                flock_id_i = Integer(flock_id, 10) rescue routing.halt(404, { message: 'Invalid ID format' }.to_json)
+                flock_id_i = Integer(flock_id, 10)
                 output = { data: Flock.first(id: flock_id_i).birds }
                 JSON.pretty_generate(output)
+              rescue ArgumentError
+                routing.halt 404, { message: 'Invalid ID format' }.to_json
               rescue StandardError
-                routing.halt 404, message: 'Could not find birds'
+                routing.halt 404, { message: 'Could not find birds' }.to_json
               end
 
               # POST api/v1/flocks/[ID]/birds
@@ -75,15 +75,13 @@ module Flocks
             # GET api/v1/flocks/[ID]
             routing.get do
               # SQL injection prevention :check ID for validity and transform to integer
-              begin
-                flock_id_i = Integer(flock_id, 10)
-                flock = Flock.first(id: flock_id_i)
-                flock ? flock.to_json : raise('Flock not found')
-              rescue ArgumentError
-                routing.halt 404, { message: 'Invalid ID format' }.to_json
-              rescue StandardError => e
-                routing.halt 404, { message: e.message }.to_json
-              end
+              flock_id_i = Integer(flock_id, 10)
+              flock = Flock.first(id: flock_id_i)
+              flock ? flock.to_json : raise('Flock not found')
+            rescue ArgumentError
+              routing.halt 404, { message: 'Invalid ID format' }.to_json
+            rescue StandardError => e
+              routing.halt 404, { message: e.message }.to_json
             end
           end
 
@@ -104,7 +102,6 @@ module Flocks
             response.status = 201
             response['Location'] = "#{@flock_route}/#{new_flock.id}"
             { message: 'Flock saved', data: new_flock }.to_json
-
           rescue Sequel::MassAssignmentRestriction
             Api.logger.warn "Mass-assignment : #{new_data.keys}"
             routing.halt 400, { message: 'Illegal Attributes' }.to_json

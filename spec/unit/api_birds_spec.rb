@@ -6,15 +6,12 @@ describe 'Test Bird Handling' do
   include Rack::Test::Methods
 
   before do
-    wipe_database  # 假設你有這個方法，清空測試資料庫
-    
-    # 創建測試數據
+    wipe_database
     @flock = Flocks::Flock.create(destination_url: 'https://maps.app.goo.gl/test-location')
   end
 
   describe 'Getting birds' do
     it 'HAPPY: should be able to get list of all birds in a flock' do
-      # 添加測試鳥到群組
       @flock.add_bird(username: 'user1', message: 'Hello', latitude: 24.0, longitude: 120.0, estimated_time: 1000)
       @flock.add_bird(username: 'user2', message: 'Hi', latitude: 25.0, longitude: 121.0, estimated_time: 2000)
 
@@ -26,7 +23,6 @@ describe 'Test Bird Handling' do
     end
 
     it 'HAPPY: should be able to get details of a single bird' do
-      # 添加測試鳥到群組
       bird_data = {
         username: 'test_user',
         message: 'Testing',
@@ -51,13 +47,9 @@ describe 'Test Bird Handling' do
     end
 
     it 'SECURITY: should prevent SQL injection in username parameter' do
-      # 添加測試鳥到群組
       @flock.add_bird(username: 'legituser', message: 'Normal', latitude: 24.0, longitude: 120.0, estimated_time: 1000)
-      
-      # 嘗試進行SQL注入
+
       get "/api/v1/flocks/#{@flock.id}/birds/legituser'%20OR%20'1'='1"
-      
-      # 應該返回404，而不是找到任何鳥
       _(last_response.status).must_equal 404
     end
   end
@@ -78,10 +70,10 @@ describe 'Test Bird Handling' do
       post "api/v1/flocks/#{@flock.id}/birds", @bird_data.to_json, @req_header
       _(last_response.status).must_equal 201
       _(last_response.headers['Location'].size).must_be :>, 0
-
       created = JSON.parse(last_response.body)['data']
       bird = Flocks::Bird.first
-
+      _(bird.username).must_equal @bird_data[:username]
+      _(bird.message).must_equal @bird_data[:message]
       _(created['username']).must_equal @bird_data[:username]
       _(created['message']).must_equal @bird_data[:message]
     end

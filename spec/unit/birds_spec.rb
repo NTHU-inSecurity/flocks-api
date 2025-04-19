@@ -7,7 +7,6 @@ describe 'Test Bird Handling' do
 
   before do
     wipe_database
-
     DATA[:flocks].each do |flock_data|
       Flocks::Flock.create(flock_data)
     end
