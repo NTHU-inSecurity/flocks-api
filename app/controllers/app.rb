@@ -84,8 +84,12 @@ module Flocks
             response.status = 201
             response['Location'] = "#{@flock_route}/#{new_flock.id}"
             { message: 'Flock saved', data: new_flock }.to_json
+          rescue Sequel::MassAssignmentRestriction
+            Api.logger.warn "MASS-ASSIGNMENT: #{new_data.keys}"
+            routing.halt 400, { message: 'Illegal Attributes' }.to_json
           rescue StandardError => e
-            routing.halt 400, { message: e.message }.to_json
+            Api.logger.error "UNKOWN ERROR: #{e.message}"
+            routing.halt 500, { message: 'Unknown server error' }.to_json
           end
         end
       end
