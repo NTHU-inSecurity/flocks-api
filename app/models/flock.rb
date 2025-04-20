@@ -11,6 +11,13 @@ module Flocks
     plugin :timestamps
     plugin :uuid, field: :id
     
+
+    # white list of attributes
+    plugin :whitelist_security
+
+    # whitelist the attributes we want to allow
+    set_allowed_columns :destination_url
+
     # rubocop:disable Metrics/MethodLength
     def to_json(options = {})
       JSON(
