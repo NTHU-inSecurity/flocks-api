@@ -5,7 +5,7 @@ require 'sequel'
 Sequel.migration do
   change do
     create_table(:birds) do
-      primary_key :id
+      uuid :id, primary_key: true
       foreign_key :flock_id, table: :flocks
 
       String :username, null: false, unique: true
