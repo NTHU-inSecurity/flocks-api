@@ -8,7 +8,7 @@ module Flocks
   class Bird < Sequel::Model
     many_to_one :flock
     plugin :timestamps
-
+    plugin :uuid, field: :id
     # rubocop:disable Metrics/MethodLength
     def to_json(options = {})
       JSON(

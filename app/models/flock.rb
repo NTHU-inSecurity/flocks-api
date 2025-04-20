@@ -9,7 +9,8 @@ module Flocks
     one_to_many :birds
     plugin :association_dependencies, birds: :destroy
     plugin :timestamps
-
+    plugin :uuid, field: :id
+    
     # rubocop:disable Metrics/MethodLength
     def to_json(options = {})
       JSON(
