@@ -41,5 +41,4 @@ describe 'Test Flock Handling' do
 
     _(stored_flock[:destination_url]).must_equal flock.destination_url
   end
-
 end

@@ -33,7 +33,7 @@ module Flocks
               @bird_route = "#{@api_root}/flocks/#{flock_id}/birds"
               # GET api/v1/flocks/[ID]/birds/[username]
               routing.get String do |username|
-                # SQL injection prevention 
+                # SQL injection prevention
                 bird = Bird.where(flock_id: flock_id, username: username).first
                 bird ? bird.to_json : raise('Username not found')
               rescue StandardError => e

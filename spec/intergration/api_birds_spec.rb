@@ -25,7 +25,7 @@ describe 'Test Bird Handling' do
 
       get "api/v1/flocks/#{@flock.id}/birds"
       _(last_response.status).must_equal 200
-      
+
       result = JSON.parse last_response.body
       _(result['data'].count).must_equal 2
     end
@@ -38,7 +38,7 @@ describe 'Test Bird Handling' do
       _(last_response.status).must_equal 200
 
       result = JSON.parse last_response.body
-      
+
       _(result['data']['username']).must_equal bird_data[:username]
       _(result['data']['message']).must_equal bird_data[:message]
     end

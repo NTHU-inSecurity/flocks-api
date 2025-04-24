@@ -13,7 +13,7 @@ module Flocks
     plugin :whitelist_security
     set_allowed_columns :destination_url
 
-    def initialize(values={})
+    def initialize(values = {})
       super
       ticket = SecureDB.generate_ticket
       self.entrance_ticket_secure = SecureDB.encrypt(ticket)

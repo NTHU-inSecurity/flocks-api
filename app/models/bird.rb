@@ -51,12 +51,12 @@ module Flocks
               longitude:,
               estimated_time:
             }
-          },
-          #included: {
+          }
+          # included: {
           #  flock: {
           #    id: flock.id
           #  }
-          #}
+          # }
         }, options
       )
     end

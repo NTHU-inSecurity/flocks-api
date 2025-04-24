@@ -10,7 +10,7 @@ Sequel.migration do
 
       String :username, null: false, unique: true
       String :message_secure, default: ''
-      String :latitude_secure, null: false 
+      String :latitude_secure, null: false
       String :longitude_secure, null: false
       Integer :estimated_time # CONSIDER: should we secure as well?
 

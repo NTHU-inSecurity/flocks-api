@@ -27,16 +27,16 @@ module Flocks
       db_url = ENV.delete('DATABASE_URL')
       DB = Sequel.connect("#{db_url}?encoding=utf8")
       def self.DB = DB # rubocop:disable Naming/MethodName
-      
+
       # Load crypto keys
-      SecureDB.setup(ENV.delete('DB_KEY'), ENV.delete('TICKET_SALT'))  
+      SecureDB.setup(ENV.delete('DB_KEY'), ENV.delete('TICKET_SALT'))
 
       # Custom events logging
       LOGGER = Logger.new($stderr)
       def self.logger = LOGGER
     end
     # rubocop:enable Lint/ConstantDefinitionInBlock
-    
+
     # HTTP Request logging
     configure :development, :production do
       plugin :common_logger, $stdout

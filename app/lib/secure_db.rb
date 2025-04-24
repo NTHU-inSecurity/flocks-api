@@ -1,7 +1,9 @@
+# frozen_string_literal: true
 
 require 'rbnacl'
 require 'base64'
 
+# Encrypt and Decrypt from Database
 class SecureDB
   # custom error class
   class NoDbKeyError < StandardError; end
@@ -50,18 +52,14 @@ class SecureDB
   end
 
   def self.hash_ticket(ticket)
-    opslimit = 2**20
-    memlimit = 2**24
-    digest_size = 64
-
     hashed_ = RbNaCl::PasswordHash.scrypt(
-        ticket, 
-        @salt,
-        opslimit,
-        memlimit,
-        digest_size
+      ticket,
+      @salt,
+      2**20,
+      2**24,
+      64
     )
-    
+
     Base64.strict_encode64 hashed_
   end
 end
