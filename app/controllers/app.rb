@@ -9,6 +9,13 @@ module Flocks
   class Api < Roda
     plugin :halt
 
+    # add logger
+    class << self
+      def logger
+        @logger ||= Logger.new($stderr)
+      end
+    end
+
     route do |routing| # rubocop:disable Metrics/BlockLength
       response['Content-Type'] = 'application/json'
 
@@ -24,20 +31,24 @@ module Flocks
           routing.on String do |flock_id| # rubocop:disable Metrics/BlockLength
             routing.on 'birds' do # rubocop:disable Metrics/BlockLength
               @bird_route = "#{@api_root}/flocks/#{flock_id}/birds"
-              # GET api/v1/flocks/[flock_id]/birds/[username]
+              # GET api/v1/flocks/[ID]/birds/[username]
               routing.get String do |username|
+                # SQL injection prevention
                 bird = Bird.where(flock_id: flock_id, username: username).first
                 bird ? bird.to_json : raise('Username not found')
               rescue StandardError => e
                 routing.halt 404, { message: e.message }.to_json
               end
 
-              # GET api/v1/flocks/[flock_id]/birds
+              # GET api/v1/flocks/[ID]/birds
               routing.get do
+                # SQL injection prevention
                 output = { data: Flock.first(id: flock_id).birds }
                 JSON.pretty_generate(output)
+              rescue ArgumentError
+                routing.halt 404, { message: 'Invalid ID format' }.to_json
               rescue StandardError
-                routing.halt 404, message: 'Could not find birds'
+                routing.halt 404, { message: 'Could not find birds' }.to_json
               end
 
               # POST api/v1/flocks/[ID]/birds
@@ -53,6 +64,9 @@ module Flocks
                 else
                   routing.halt 400, 'Could not add bird'
                 end
+              rescue Sequel::MassAssignmentRestriction
+                Api.logger.warn "Mass-assignment : #{new_data.keys}"
+                routing.halt 400, { message: 'Illegal Attributes' }.to_json
               rescue StandardError
                 routing.halt 500, { message: 'Database error' }.to_json
               end
@@ -60,8 +74,11 @@ module Flocks
 
             # GET api/v1/flocks/[ID]
             routing.get do
+              # SQL injection prevention
               flock = Flock.first(id: flock_id)
               flock ? flock.to_json : raise('Flock not found')
+            rescue ArgumentError
+              routing.halt 404, { message: 'Invalid ID format' }.to_json
             rescue StandardError => e
               routing.halt 404, { message: e.message }.to_json
             end
@@ -72,7 +89,7 @@ module Flocks
             output = { data: Flock.all }
             JSON.pretty_generate(output)
           rescue StandardError
-            routing.halt 404, { message: 'Could not find flocks' }.to_json
+            routing.halt 404, { message: 'Could not find data about flocks' }.to_json
           end
 
           # POST api/v1/flocks
@@ -84,8 +101,12 @@ module Flocks
             response.status = 201
             response['Location'] = "#{@flock_route}/#{new_flock.id}"
             { message: 'Flock saved', data: new_flock }.to_json
+          rescue Sequel::MassAssignmentRestriction
+            Api.logger.warn "MASS-ASSIGNMENT: #{new_data.keys}"
+            routing.halt 400, { message: 'Illegal Attributes' }.to_json
           rescue StandardError => e
-            routing.halt 400, { message: e.message }.to_json
+            Api.logger.error "UNKOWN ERROR: #{e.message}"
+            routing.halt 500, { message: 'Unknown server error' }.to_json
           end
         end
       end

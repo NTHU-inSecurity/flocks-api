@@ -10,7 +10,6 @@ describe 'Test environment setup' do
   it 'HAPPY: should have database connection' do
     _(Flocks::Api.DB).wont_be_nil
     _(Flocks::Api.DB.tables).must_be_kind_of Array
-    # https://sequel.jeremyevans.net/rdoc/classes/Sequel/Database.html
   end
 
   it 'HAPPY: should handle DATABASE_URL not found in ENV' do

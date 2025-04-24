@@ -12,7 +12,7 @@ end
 
 desc 'Test all the specs'
 Rake::TestTask.new(:spec) do |t|
-  t.pattern = 'spec/*_spec.rb'
+  t.pattern = 'spec/**/*_spec.rb'
   t.warning = false
 end
 
@@ -73,5 +73,21 @@ namespace :db do # rubocop:disable Metrics/BlockLength
     db_filename = "db/local/#{Flocks::Api.environment}.db"
     FileUtils.rm(db_filename)
     puts "Deleted #{db_filename}"
+  end
+end
+
+namespace :newkey do
+  desc 'Create sample cryptographic key for database'
+  task :db do
+    require_app('lib', config: false)
+    puts "DB_KEY: #{SecureDB.generate_key}"
+  end
+end
+
+namespace :newsalt do
+  desc 'Create sample cryptographic salt to hash entrance ticket'
+  task :db do
+    require_app('lib', config: false)
+    puts "TICKET_SALT: #{SecureDB.generate_hash_salt}"
   end
 end
