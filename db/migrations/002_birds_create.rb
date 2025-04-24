@@ -9,10 +9,10 @@ Sequel.migration do
       foreign_key :flock_id, table: :flocks
 
       String :username, null: false, unique: true
-      String :message
-      Float :latitude
-      Float :longitude
-      Integer :estimated_time
+      String :message_secure, default: ''
+      String :latitude_secure, null: false 
+      String :longitude_secure, null: false
+      Integer :estimated_time # CONSIDER: should we secure as well?
 
       DateTime :created_at
       DateTime :updated_at

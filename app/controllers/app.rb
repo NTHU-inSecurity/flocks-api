@@ -31,19 +31,19 @@ module Flocks
           routing.on String do |flock_id| # rubocop:disable Metrics/BlockLength
             routing.on 'birds' do # rubocop:disable Metrics/BlockLength
               @bird_route = "#{@api_root}/flocks/#{flock_id}/birds"
-              # GET api/v1/flocks/[flock_id]/birds/[username]
+              # GET api/v1/flocks/[ID]/birds/[username]
               routing.get String do |username|
-                # SQL injection prevention :use parameters to search
-                bird = Bird.where(flock_id: flock_id).where(Sequel.lit('username = ?', username)).first
+                # SQL injection prevention 
+                bird = Bird.where(flock_id: flock_id, username: username).first
                 bird ? bird.to_json : raise('Username not found')
               rescue StandardError => e
                 routing.halt 404, { message: e.message }.to_json
               end
 
+              # GET api/v1/flocks/[ID]/birds
               routing.get do
-                # SQL injection prevention :check ID for validity
-                flock_id_i = Integer(flock_id, 10)
-                output = { data: Flock.first(id: flock_id_i).birds }
+                # SQL injection prevention
+                output = { data: Flock.first(id: flock_id).birds }
                 JSON.pretty_generate(output)
               rescue ArgumentError
                 routing.halt 404, { message: 'Invalid ID format' }.to_json
@@ -74,9 +74,8 @@ module Flocks
 
             # GET api/v1/flocks/[ID]
             routing.get do
-              # SQL injection prevention :check ID for validity and transform to integer
-              flock_id_i = Integer(flock_id, 10)
-              flock = Flock.first(id: flock_id_i)
+              # SQL injection prevention
+              flock = Flock.first(id: flock_id)
               flock ? flock.to_json : raise('Flock not found')
             rescue ArgumentError
               routing.halt 404, { message: 'Invalid ID format' }.to_json
@@ -90,7 +89,7 @@ module Flocks
             output = { data: Flock.all }
             JSON.pretty_generate(output)
           rescue StandardError
-            routing.halt 404, { message: 'Could not find flocks' }.to_json
+            routing.halt 404, { message: 'Could not find data about flocks' }.to_json
           end
 
           # POST api/v1/flocks

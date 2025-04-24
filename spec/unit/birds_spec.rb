@@ -1,69 +1,44 @@
 # frozen_string_literal: true
 
-require_relative 'spec_helper'
+require_relative '../spec_helper'
 
 describe 'Test Bird Handling' do
-  include Rack::Test::Methods
-
   before do
     wipe_database
+
     DATA[:flocks].each do |flock_data|
       Flocks::Flock.create(flock_data)
     end
   end
 
-  it 'HAPPY: should be able to get list of all flocks' do
-    flock = Flocks::Flock.first
-    DATA[:birds].each do |bird|
-      flock.add_bird(bird)
-    end
-
-    get "api/v1/flocks/#{flock.id}/birds"
-    _(last_response.status).must_equal 200
-
-    result = JSON.parse last_response.body
-    _(result['data'].count).must_equal 2
-  end
-
-  it 'HAPPY: should be able to get details of a single bird' do
+  it 'HAPPY: should retrieve correct data from database' do
     bird_data = DATA[:birds][1]
     flock = Flocks::Flock.first
+    new_bird = flock.add_bird(bird_data)
 
-    bird = flock.add_bird(bird_data).save
-
-    get "/api/v1/flocks/#{flock.id}/birds/#{bird.username}"
-    _(last_response.status).must_equal 200
-
-    result = JSON.parse last_response.body
-    _(result['data']['attributes']['id']).must_equal bird.id
-    _(result['data']['attributes']['username']).must_equal bird_data['username']
+    bird = Flocks::Bird.find(id: new_bird.id)
+    _(bird.username).must_equal bird_data['username']
+    _(bird.message).must_equal bird_data['message']
+    _(bird.longitude).must_equal bird_data['longitude']
+    _(bird.latitude).must_equal bird_data['latitude']
   end
 
-  it 'SAD: should return error if unknown bird requested' do
-    flock = Flocks::Flock.first
-    get "/api/v1/flocks/#{flock.id}/birds/foobar"
-
-    _(last_response.status).must_equal 404
-  end
-
-  it 'HAPPY: should be able to create new birds' do
-    flock = Flocks::Flock.first
+  it 'SECURITY: should not use deterministic integers' do
     bird_data = DATA[:birds][1]
+    flock = Flocks::Flock.first
+    new_bird = flock.add_bird(bird_data)
 
-    req_header = { 'CONTENT_TYPE' => 'application/json' }
-    post "api/v1/flocks/#{flock.id}/birds",
-         bird_data.to_json, req_header
-    _(last_response.status).must_equal 201
-    _(last_response.headers['Location'].size).must_be :>, 0
+    _(new_bird.id.is_a?(Numeric)).must_equal false
+  end
 
-    created = JSON.parse(last_response.body)['data']['data']['attributes']
-    bird = Flocks::Bird.first
+  it 'SECURITY: should secure sensitive attributes' do
+    bird_data = DATA[:birds][1]
+    flock = Flocks::Flock.first
+    new_bird = flock.add_bird(bird_data)
+    stored_bird = app.DB[:birds].first
 
-    _(created['id']).must_equal bird.id
-    _(created['username']).must_equal bird_data['username']
-    _(created['message']).must_equal bird_data['message']
-    _(created['latitude']).must_equal bird_data['latitude']
-    _(created['longitude']).must_equal bird_data['longitude']
-    _(created['estimated_time']).must_equal bird_data['estimated_time']
+    _(stored_bird[:message_secure]).wont_equal new_bird.message
+    _(stored_bird[:latitude_secure]).wont_equal new_bird.latitude
+    _(stored_bird[:longitude_secure]).wont_equal new_bird.longitude
   end
 end

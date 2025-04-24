@@ -12,7 +12,7 @@ end
 
 desc 'Test all the specs'
 Rake::TestTask.new(:spec) do |t|
-  t.pattern = 'spec/*_spec.rb'
+  t.pattern = 'spec/**/*_spec.rb'
   t.warning = false
 end
 
@@ -81,5 +81,13 @@ namespace :newkey do
   task :db do
     require_app('lib', config: false)
     puts "DB_KEY: #{SecureDB.generate_key}"
+  end
+end
+
+namespace :newsalt do
+  desc 'Create sample cryptographic salt to hash entrance ticket'
+  task :db do
+    require_app('lib', config: false)
+    puts "TICKET_SALT: #{SecureDB.generate_hash_salt}"
   end
 end

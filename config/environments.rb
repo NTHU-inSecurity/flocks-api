@@ -5,6 +5,8 @@ require 'figaro'
 require 'sequel'
 require 'logger'
 
+require_relative '../app/lib/secure_db'
+
 module Flocks
   # Configuration for the API
   class Api < Roda
@@ -14,7 +16,7 @@ module Flocks
       # load config secrets into local environment variables (ENV)
       Figaro.application = Figaro::Application.new(
         environment: environment,
-        path: File.expand_path('config/secrets_example.yml')
+        path: File.expand_path('config/secrets.yml')
       )
       Figaro.load
 
@@ -26,6 +28,9 @@ module Flocks
       DB = Sequel.connect("#{db_url}?encoding=utf8")
       def self.DB = DB # rubocop:disable Naming/MethodName
       
+      # Load crypto keys
+      SecureDB.setup(ENV.delete('DB_KEY'), ENV.delete('TICKET_SALT'))  
+
       # Custom events logging
       LOGGER = Logger.new($stderr)
       def self.logger = LOGGER

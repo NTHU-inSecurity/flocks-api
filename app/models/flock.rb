@@ -10,13 +10,19 @@ module Flocks
     plugin :association_dependencies, birds: :destroy
     plugin :timestamps
     plugin :uuid, field: :id
-    
-
-    # white list of attributes
     plugin :whitelist_security
-
-    # whitelist the attributes we want to allow
     set_allowed_columns :destination_url
+
+    def initialize(values={})
+      super
+      ticket = SecureDB.generate_ticket
+      self.entrance_ticket_secure = SecureDB.encrypt(ticket)
+      self.entrance_ticket_hashed = SecureDB.hash_ticket(ticket)
+    end
+
+    def entrance_ticket
+      SecureDB.decrypt(entrance_ticket_secure)
+    end
 
     # rubocop:disable Metrics/MethodLength
     def to_json(options = {})
@@ -25,8 +31,9 @@ module Flocks
           data: {
             type: 'flock',
             attributes: {
-              id: id,
-              destination_url:
+              id:,
+              destination_url:,
+              entrance_ticket:
             }
           }
         }, options

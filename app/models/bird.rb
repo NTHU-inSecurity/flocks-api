@@ -9,12 +9,33 @@ module Flocks
     many_to_one :flock
     plugin :timestamps
     plugin :uuid, field: :id
-
-    # white list of attributes
     plugin :whitelist_security
+    set_allowed_columns :username, :message, :latitude, :longitude, :estimated_time
 
-    # whitelist the attributes we want to allow
-    set_allowed_columns :username, :message, :latitude, :longitude, :estimated_time, :flock_id
+    # Secure getters and setters
+    def message
+      SecureDB.decrypt(message_secure)
+    end
+
+    def message=(plaintext)
+      self.message_secure = SecureDB.encrypt(plaintext)
+    end
+
+    def latitude
+      Float(SecureDB.decrypt(latitude_secure))
+    end
+
+    def latitude=(plaintext)
+      self.latitude_secure = SecureDB.encrypt(plaintext.to_s)
+    end
+
+    def longitude
+      Float(SecureDB.decrypt(longitude_secure))
+    end
+
+    def longitude=(plaintext)
+      self.longitude_secure = SecureDB.encrypt(plaintext.to_s)
+    end
 
     # rubocop:disable Metrics/MethodLength
     def to_json(options = {})
@@ -31,9 +52,11 @@ module Flocks
               estimated_time:
             }
           },
-          included: {
-            flock:
-          }
+          #included: {
+          #  flock: {
+          #    id: flock.id
+          #  }
+          #}
         }, options
       )
     end

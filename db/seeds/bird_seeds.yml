@@ -4,11 +4,9 @@
   latitude: 24.7
   longitude: 121.0
   estimated_time: 1200
-  flock_id: 1
 
 - username: "testuser2"
   message: "test message 2"
   latitude: 24.8
   longitude: 121.1
   estimated_time: 600
-  flock_id: 2
