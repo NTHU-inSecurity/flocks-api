@@ -1,4 +1,5 @@
 ---
-- destination_url: "https://maps.app.goo.gl/example1"
-
-- destination_url: "https://maps.app.goo.gl/example2"
+flocks:
+  - destination_url: https://maps.app.goo.gl/example-location-1
+  - destination_url: https://maps.app.goo.gl/example-location-2
+  - destination_url: https://maps.app.goo.gl/example-location-3

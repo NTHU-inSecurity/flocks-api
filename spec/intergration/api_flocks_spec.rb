@@ -11,8 +11,8 @@ describe 'Test Flock Handling' do
 
   describe 'Getting flocks' do
     it 'HAPPY: should be able to get list of all flocks' do
-      Flocks::Flock.create(DATA[:flocks][0])
-      Flocks::Flock.create(DATA[:flocks][1])
+      Flocks::Flock.create(flock_data:DATA[:flocks][0])
+      Flocks::Flock.create(flock_data:DATA[:flocks][1])
 
       get 'api/v1/flocks'
       _(last_response.status).must_equal 200
@@ -23,6 +23,7 @@ describe 'Test Flock Handling' do
 
     it 'HAPPY: should be able to get details of a single flock' do
       existing_flock = DATA[:flocks][0]
+
       Flocks::Flock.create(existing_flock)
       id = Flocks::Flock.first.id
 
@@ -42,8 +43,8 @@ describe 'Test Flock Handling' do
     end
 
     it 'SECURITY: should prevent basic SQL injection targeting IDs' do
-      Flocks::Flock.create(DATA[:flocks][0])
-      Flocks::Flock.create(DATA[:flocks][1])
+      Flocks::Flock.create(flock_data:DATA[:flocks][0])
+      Flocks::Flock.create(flock_data:DATA[:flocks][1])
       get 'api/v1/flocks/2%20or%20id%3E0'
       _(last_response.status).must_equal 404
     end
