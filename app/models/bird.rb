@@ -6,7 +6,7 @@ require 'sequel'
 module Flocks
   # Models a bird (user) in a flock
   class Bird < Sequel::Model
-    many_to_one :flock
+    many_to_one :account, :flock
     plugin :timestamps
     plugin :uuid, field: :id
     plugin :whitelist_security
