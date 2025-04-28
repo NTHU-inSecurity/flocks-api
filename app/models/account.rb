@@ -6,8 +6,17 @@ require 'sequel'
 module Flocks
   # Models a user account
   class Account < Sequel::Model
+    one_to_many :created_flocks, class: :'Flocks::Flock', key: :creator_id
+
+    many_to_many :visitors, class: :'Flocks::Flock',
+                 join_table: :accounts_flocks,
+                 left_key: :visitor_id, right_key: :flock_id
+
     one_to_many :birds
     
+    plugin :association_dependencies,
+           created_flocks: :destroy,
+           visitors: :nullify
     plugin :timestamps
     plugin :uuid, field: :id
     plugin :whitelist_security
