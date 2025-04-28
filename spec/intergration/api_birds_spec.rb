@@ -9,7 +9,7 @@ describe 'Test Bird Handling' do
     wipe_database
 
     DATA[:flocks].each do |flock_data|
-      Flocks::CreateFlock.call(flock_data: flock_data)
+      Flocks::Flock.create(flock_data)
     end
   end
 
@@ -20,7 +20,7 @@ describe 'Test Bird Handling' do
 
     it 'HAPPY: should be able to get list of all birds in a flock' do
       DATA[:birds].each do |bird_data|
-        Flocks::AddBirdToFlock.call(flock_id: @flock.id, bird_data: bird_data)
+        @flock.add_bird(bird_data)
       end
 
       get "api/v1/flocks/#{@flock.id}/birds"
@@ -32,7 +32,7 @@ describe 'Test Bird Handling' do
 
     it 'HAPPY: should be able to get details of a single bird' do
       bird_data = DATA[:birds][0]
-      bird = Flocks::AddBirdToFlock.call(flock_id: @flock.id, bird_data: bird_data)
+      bird = @flock.add_bird(bird_data)
 
       get "api/v1/flocks/#{@flock.id}/birds/#{bird.username}"
       _(last_response.status).must_equal 200
@@ -51,7 +51,7 @@ describe 'Test Bird Handling' do
 
     it 'SECURITY: should prevent SQL injection in username parameter' do
       DATA[:birds].each do |bird_data|
-        Flocks::AddBirdToFlock.call(flock_id: @flock.id, bird_data: bird_data)
+        @flock.add_bird(bird_data)
       end
 
       get "/api/v1/flocks/#{@flock.id}/birds/%27%20OR%20username%20LIKE%20%27%25%27%20--"

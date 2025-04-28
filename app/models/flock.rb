@@ -6,15 +6,8 @@ require 'sequel'
 module Flocks
   # Models a flock (group) with destination
   class Flock < Sequel::Model
-    many_to_one :creator, class: :'Flocks::Account'
-
-    many_to_many :visitors, class: :'Flocks::Account',
-                 join_table: :accounts_flocks,
-                 left_key: :flock_id, right_key: :visitor_id
-
     one_to_many :birds
-
-    plugin :association_dependencies, birds: :destroy, visitors: :nullify
+    plugin :association_dependencies, birds: :destroy
     plugin :timestamps
     plugin :uuid, field: :id
     plugin :whitelist_security
