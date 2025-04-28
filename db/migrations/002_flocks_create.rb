@@ -6,6 +6,7 @@ Sequel.migration do
   change do
     create_table(:flocks) do
       uuid :id, primary_key: true # this is flock_id
+      foreign_key :creator_id, :accounts
 
       String :destination_url
       String :entrance_ticket_secure, null: false
