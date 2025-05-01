@@ -41,39 +41,55 @@ task console: :print_env do
 end
 
 namespace :db do # rubocop:disable Metrics/BlockLength
-  task :load do
-    require_app(nil) # load nothing by default
-    require 'sequel'
+  require_app(nil) # load nothing by default
+  require 'sequel'
 
-    Sequel.extension :migration
-    @app = Flocks::Api
-  end
-
-  task :load_models do
-    require_app('models')
-  end
+  Sequel.extension :migration
+  app = Flocks::Api
 
   desc 'Run migrations'
-  task migrate: %i[load print_env] do
+  task migrate: :print_env do
     puts 'Migrating database to latest'
-    Sequel::Migrator.run(@app.DB, 'db/migrations')
+    Sequel::Migrator.run(app.DB, 'db/migrations')
   end
 
-  desc 'Destroy data in database; maintain tables'
-  task delete: :load_models do
-    Flocks::Project.dataset.destroy
+  desc 'Delete database'
+  task :delete do
+    app.DB[:birds].delete
+    app.DB[:flocks].delete
   end
 
   desc 'Delete dev or test database file'
-  task drop: :load do
-    if @app.environment == :production
+  task :drop do
+    if app.environment == :production
       puts 'Cannot wipe production database!'
       return
     end
+
     db_filename = "db/local/#{Flocks::Api.environment}.db"
     FileUtils.rm(db_filename)
     puts "Deleted #{db_filename}"
   end
+
+  task :load_models do
+    require_app(%w[lib models services])
+  end
+
+  task reset_seeds: [:load_models] do
+    app.DB[:schema_seeds].delete if app.DB.tables.include?(:schema_seeds)
+    Flocks::Account.dataset.destroy
+  end
+
+  desc 'Seeds the development database'
+  task seed: [:load_models] do
+    require 'sequel/extensions/seed'
+    Sequel::Seed.setup(:development)
+    Sequel.extension :seed
+    Sequel::Seeder.apply(app.DB, 'db/seeds')
+  end
+
+  desc 'Delete all data and reseed'
+  task reseed: %i[reset_seeds seed]
 end
 
 namespace :newkey do
@@ -81,13 +97,5 @@ namespace :newkey do
   task :db do
     require_app('lib', config: false)
     puts "DB_KEY: #{SecureDB.generate_key}"
-  end
-end
-
-namespace :newsalt do
-  desc 'Create sample cryptographic salt to hash entrance ticket'
-  task :db do
-    require_app('lib', config: false)
-    puts "TICKET_SALT: #{SecureDB.generate_hash_salt}"
   end
 end

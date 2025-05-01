@@ -1,5 +1,4 @@
 ---
-birds:
   - username: user_one
     message: I'll be there in 10 minutes
     latitude: 24.787404

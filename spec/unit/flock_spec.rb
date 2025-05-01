@@ -20,25 +20,4 @@ describe 'Test Flock Handling' do
 
     _(flock.id.is_a?(Numeric)).must_equal false
   end
-
-  it 'SECURITY: should secure sensitive attributes' do
-    flock_data = DATA[:flocks][1]
-    flock = Flocks::Flock.create(flock_data)
-    stored_flock = app.DB[:flocks].first
-
-    _(stored_flock[:entrance_ticket_secure]).wont_equal flock.entrance_ticket
-    _(stored_flock[:entrance_ticket_secure]).wont_equal flock.entrance_ticket_hashed
-    _(stored_flock[:entrance_ticket_hashed]).wont_equal nil
-  end
-
-  it 'SECURITY: should search by hashed value' do
-    flock_data = DATA[:flocks][1]
-    flock = Flocks::Flock.create(flock_data)
-    stored_flock = app.DB[:flocks].first
-
-    pass_hashed = SecureDB.hash_ticket(flock.entrance_ticket)
-    flock = Flocks::Flock.first(entrance_ticket_hashed: pass_hashed)
-
-    _(stored_flock[:destination_url]).must_equal flock.destination_url
-  end
 end

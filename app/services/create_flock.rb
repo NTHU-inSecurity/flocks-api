@@ -1,25 +1,10 @@
 # frozen_string_literal: true
 
 module Flocks
-  # Service object to create a new flock with creator
+  # Service object to create flock by creator (single bird)
   class CreateFlock
-    def self.call(account_id:, flock_data:)
-
-      Flock.db.transaction do
-        new_flock = Flock.new(flock_data)
-        raise('Could not save flock') unless new_flock.save_changes
-        
-        creator_role = Role.first(name: Role::CREATOR)
-        raise('Creator role not found') unless creator_role
-        
-        DB[:accounts_flocks_roles].insert(
-          account_id: account_id,
-          flock_id: new_flock.id,
-          role_id: creator_role.id
-        )
-        
-        new_flock
-      end
+    def self.call(email:, flock_data:)
+      Account.where(email: email).first.add_created_flock(flock_data)
     end
   end
 end

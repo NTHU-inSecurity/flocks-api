@@ -20,6 +20,7 @@ gem 'rbnacl', '~>7.0'
 gem 'hirb'
 gem 'sequel', '~>5.55'
 group :development, :test do
+  gem 'sequel-seed'
   gem 'sqlite3', '~>1.4'
 end
 

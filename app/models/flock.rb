@@ -8,28 +8,17 @@ module Flocks
   class Flock < Sequel::Model
     many_to_one :creator, class: :'Flocks::Account'
 
-    many_to_many :visitors, class: :'Flocks::Account',
-                 join_table: :accounts_flocks,
-                 left_key: :flock_id, right_key: :visitor_id
-
     one_to_many :birds
 
-    plugin :association_dependencies, birds: :destroy, visitors: :nullify
+    many_to_many :accounts, class: :'Flocks::Account',
+                            join_table: :birds,
+                            left_key: :flock_id, right_key: :account_id
+
+    plugin :association_dependencies, accounts: :nullify
     plugin :timestamps
     plugin :uuid, field: :id
     plugin :whitelist_security
     set_allowed_columns :destination_url
-
-    def initialize(values = {})
-      super
-      ticket = SecureDB.generate_ticket
-      self.entrance_ticket_secure = SecureDB.encrypt(ticket)
-      self.entrance_ticket_hashed = SecureDB.hash_ticket(ticket)
-    end
-
-    def entrance_ticket
-      SecureDB.decrypt(entrance_ticket_secure)
-    end
 
     # rubocop:disable Metrics/MethodLength
     def to_json(options = {})
@@ -39,8 +28,7 @@ module Flocks
             type: 'flock',
             attributes: {
               id:,
-              destination_url:,
-              entrance_ticket:
+              destination_url:
             }
           }
         }, options

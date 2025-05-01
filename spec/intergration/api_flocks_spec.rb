@@ -7,12 +7,16 @@ describe 'Test Flock Handling' do
 
   before do
     wipe_database
+
+    DATA[:accounts].each do |account_info|
+      Flocks::Account.create(account_info)
+    end
   end
 
   describe 'Getting flocks' do
     it 'HAPPY: should be able to get list of all flocks' do
-      Flocks::Flock.create(flock_data:DATA[:flocks][0])
-      Flocks::Flock.create(flock_data:DATA[:flocks][1])
+      Flocks::CreateFlock.call(email: DATA[:accounts][0]['email'], flock_data: DATA[:flocks][0])
+      Flocks::CreateFlock.call(email: DATA[:accounts][1]['email'], flock_data: DATA[:flocks][1])
 
       get 'api/v1/flocks'
       _(last_response.status).must_equal 200
@@ -24,7 +28,7 @@ describe 'Test Flock Handling' do
     it 'HAPPY: should be able to get details of a single flock' do
       existing_flock = DATA[:flocks][0]
 
-      Flocks::Flock.create(existing_flock)
+      Flocks::CreateFlock.call(email: DATA[:accounts][0]['email'], flock_data: existing_flock)
       id = Flocks::Flock.first.id
 
       get "/api/v1/flocks/#{id}"
@@ -33,7 +37,6 @@ describe 'Test Flock Handling' do
       result = JSON.parse last_response.body
       _(result['data']['attributes']['id']).must_equal id
       _(result['data']['attributes']['destination_url']).must_equal existing_flock['destination_url']
-      _(result['data']['attributes']['entrance_ticket']).wont_equal nil
     end
 
     it 'SAD: should return error if unknown flock requested' do
@@ -43,8 +46,9 @@ describe 'Test Flock Handling' do
     end
 
     it 'SECURITY: should prevent basic SQL injection targeting IDs' do
-      Flocks::Flock.create(flock_data:DATA[:flocks][0])
-      Flocks::Flock.create(flock_data:DATA[:flocks][1])
+      Flocks::CreateFlock.call(email: DATA[:accounts][0]['email'], flock_data: DATA[:flocks][0])
+      Flocks::CreateFlock.call(email: DATA[:accounts][1]['email'], flock_data: DATA[:flocks][1])
+
       get 'api/v1/flocks/2%20or%20id%3E0'
       _(last_response.status).must_equal 404
     end

@@ -136,6 +136,8 @@ GEM
       sexp_processor (~> 4.16)
     sequel (5.91.0)
       bigdecimal
+    sequel-seed (1.1.2)
+      sequel (>= 4.49.0)
     sexp_processor (4.17.3)
     sqlite3 (1.7.3)
       mini_portile2 (~> 2.8.0)
@@ -172,6 +174,7 @@ DEPENDENCIES
   rubocop-minitest
   rubocop-performance
   sequel (~> 5.55)
+  sequel-seed
   sqlite3 (~> 1.4)
 
 BUNDLED WITH
