@@ -6,15 +6,17 @@ describe 'Test Bird Handling' do
   before do
     wipe_database
 
-    DATA[:flocks].each do |flock_data|
-      Flocks::Flock.create(flock_data)
+    DATA[:accounts].each do |account_info|
+      Flocks::Account.create(account_info)
     end
+
+    Flocks::CreateFlock.call(email: DATA[:accounts][0]['email'], flock_data: DATA[:flocks][0])
   end
 
   it 'HAPPY: should retrieve correct data from database' do
-    bird_data = DATA[:birds][1]
     flock = Flocks::Flock.first
-    new_bird = flock.add_bird(bird_data)
+    bird_data = DATA[:birds][0].merge({ account: Flocks::Account.first })
+    new_bird = Flocks::AddBirdToFlock.call(flock_id: flock.id, bird_data: bird_data)
 
     bird = Flocks::Bird.find(id: new_bird.id)
     _(bird.username).must_equal bird_data['username']
@@ -24,17 +26,19 @@ describe 'Test Bird Handling' do
   end
 
   it 'SECURITY: should not use deterministic integers' do
-    bird_data = DATA[:birds][1]
     flock = Flocks::Flock.first
-    new_bird = flock.add_bird(bird_data)
+    bird_data = DATA[:birds][0].merge({ account: Flocks::Account.first })
+    new_bird = Flocks::AddBirdToFlock.call(flock_id: flock.id, bird_data: bird_data)
 
-    _(new_bird.id.is_a?(Numeric)).must_equal false
+    _(new_bird.account_id.is_a?(Numeric)).must_equal false
+    _(new_bird.flock_id.is_a?(Numeric)).must_equal false
   end
 
   it 'SECURITY: should secure sensitive attributes' do
-    bird_data = DATA[:birds][1]
     flock = Flocks::Flock.first
-    new_bird = flock.add_bird(bird_data)
+    bird_data = DATA[:birds][0].merge({ account: Flocks::Account.first })
+    new_bird = Flocks::AddBirdToFlock.call(flock_id: flock.id, bird_data: bird_data)
+
     stored_bird = app.DB[:birds].first
 
     _(stored_bird[:message_secure]).wont_equal new_bird.message

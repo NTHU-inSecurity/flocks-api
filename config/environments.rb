@@ -25,7 +25,16 @@ module Flocks
 
       # Connect and make the database accessible to other classes
       db_url = ENV.delete('DATABASE_URL')
-      DB = Sequel.connect("#{db_url}?encoding=utf8")
+      db_path = case environment
+                when 'test'
+                  'sqlite://db/local/test.db'
+                when 'development'
+                  'sqlite://db/local/development.db'
+                else
+                  'sqlite://db/local/production.db'
+                end
+
+      DB = Sequel.connect(db_url || db_path, encoding: 'utf8')
       def self.DB = DB # rubocop:disable Naming/MethodName
 
       # Load crypto keys
