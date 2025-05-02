@@ -85,8 +85,13 @@ module Flocks
               # POST api/v1/flocks/[ID]/birds
               routing.post do
                 new_data = JSON.parse(routing.body.read)
+
+                # FIX: if you remove this, it won't work
+                acc = Account.first(id: new_data['account']['id'])
+                new_data['account'] = acc
+
                 new_bird = AddBirdToFlock.call(flock_id: flock_id, bird_data: new_data)
-                
+
                 if new_bird
                   response.status = 201
                   response['Location'] = "#{@bird_route}/#{new_bird.id}"
