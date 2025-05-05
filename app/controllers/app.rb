@@ -9,13 +9,6 @@ module Flocks
   class Api < Roda
     plugin :halt
 
-    # add logger
-    class << self
-      def logger
-        @logger ||= Logger.new($stderr)
-      end
-    end
-
     route do |routing| # rubocop:disable Metrics/BlockLength
       response['Content-Type'] = 'application/json'
 
