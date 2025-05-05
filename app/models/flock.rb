@@ -20,20 +20,16 @@ module Flocks
     plugin :whitelist_security
     set_allowed_columns :destination_url
 
-    # rubocop:disable Metrics/MethodLength
     def to_json(options = {})
       JSON(
         {
-          data: {
-            type: 'flock',
-            attributes: {
-              id:,
-              destination_url:
-            }
+          type: 'flock',
+          attributes: {
+            id:,
+            destination_url:
           }
         }, options
       )
     end
-    # rubocop:enable Metrics/MethodLength
   end
 end

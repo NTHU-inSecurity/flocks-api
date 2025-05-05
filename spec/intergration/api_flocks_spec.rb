@@ -35,8 +35,8 @@ describe 'Test Flock Handling' do
       _(last_response.status).must_equal 200
 
       result = JSON.parse last_response.body
-      _(result['data']['attributes']['id']).must_equal id
-      _(result['data']['attributes']['destination_url']).must_equal existing_flock['destination_url']
+      _(result['attributes']['id']).must_equal id
+      _(result['attributes']['destination_url']).must_equal existing_flock['destination_url']
     end
 
     it 'SAD: should return error if unknown flock requested' do
@@ -65,7 +65,7 @@ describe 'Test Flock Handling' do
       _(last_response.status).must_equal 201
       _(last_response.headers['Location'].size).must_be :>, 0
 
-      created = JSON.parse(last_response.body)['data']['data']['attributes']
+      created = JSON.parse(last_response.body)['data']['attributes']
       flock = Flocks::Flock.first
 
       _(created['id']).must_equal flock.id
