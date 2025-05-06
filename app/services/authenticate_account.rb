@@ -9,13 +9,14 @@ module Flocks
     end
 
     def message
-      "Invalid Credentials for: #{@credentials[:username]}"
+      "Invalid Credentials for: #{@credentials[:email]}"
     end
   end
 
   # Find account and check password
   class AuthenticateAccount
     def self.call(credentials)
+      puts(credentials)
       account = Account.first(email: credentials[:email])
       account.password?(credentials[:password]) ? account : raise
     rescue StandardError
