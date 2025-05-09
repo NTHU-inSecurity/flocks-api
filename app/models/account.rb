@@ -38,8 +38,9 @@ module Flocks
       JSON(
         {
           type: 'account',
-          id:,
-          email:
+          attributes: {
+            email:
+          }
         }, options
       )
     end
