@@ -70,19 +70,29 @@ module Flocks
         end
       end
 
-      # GET api/v1/flocks
+      # GET api/v1/flocks?email=[email]
       routing.get do
-        output = { data: Flock.all }
+        email = routing.params['email']
+        account = Account.first(email: email)
+        raise 'Account not found' unless account
+
+        account_flocks = account.created_flocks
+
+        output = { data: account_flocks }
         JSON.pretty_generate(output)
-      rescue StandardError
-        routing.halt 404, { message: 'Could not find data about flocks' }.to_json
+      rescue StandardError => e
+        routing.halt 404, { message: e.message }.to_json
       end
 
-      # POST api/v1/flocks
+      # POST api/v1/flocks?email=[email]
       routing.post do
-        new_data = JSON.parse(routing.body.read)
-        new_flock = Flock.new(new_data)
-        raise('Could not save flock') unless new_flock.save_changes
+        new_data = JSON.parse(routing.body.read).transform_keys(&:to_sym)
+        email = routing.params['email']
+        account = Account.where(email: email).first
+        raise('Account not found') unless account
+        new_flock = account.add_created_flock(new_data)
+        
+        raise('Could not save flock') unless new_flock.save
 
         response.status = 201
         response['Location'] = "#{@flock_route}/#{new_flock.id}"
@@ -91,7 +101,7 @@ module Flocks
         Api.logger.warn "MASS-ASSIGNMENT: #{new_data.keys}"
         routing.halt 400, { message: 'Illegal Attributes' }.to_json
       rescue StandardError => e
-        Api.logger.error "UNKOWN ERROR: #{e.message}"
+        Api.logger.error "UNKNOWN ERROR: #{e.message}"
         routing.halt 500, { message: 'Unknown server error' }.to_json
       end
     end
