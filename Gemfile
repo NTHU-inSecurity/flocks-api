@@ -19,25 +19,36 @@ gem 'rbnacl', '~>7.0'
 # DATABASE
 gem 'hirb'
 gem 'sequel', '~>5.55'
-group :development, :test do
-  gem 'sequel-seed'
-  gem 'sqlite3', '~>1.4'
+
+# Debugging
+gem 'pry'
+
+# Development
+group :development do
+  gem 'rerun'
+
+  # Quality
+  gem 'rubocop'
+  gem 'rubocop-minitest'
+  gem 'rubocop-performance'
+  gem 'rubocop-rake'
+  gem 'rubocop-sequel'
+
+  # Audit
+  gem 'bundler-audit'
 end
 
-# PERFORMANCE
-gem 'rubocop-performance'
+group :development, :test do
+  # API testing
+  gem 'rack-test'
 
-# TESTING
-gem 'minitest', '~>5.0'
-gem 'minitest-rg', '~>5.0'
-gem 'rack-test', '~>2.0'
-gem 'rspec', '~> 3.12'
+  # Database
+  gem 'sequel-seed'
+  gem 'sqlite3', '~>1.6'
+end
 
-# DEVELOPMENT
-gem 'bundler-audit'
-gem 'flog'
-gem 'pry'
-gem 'reek'
-gem 'rerun'
-gem 'rubocop'
-gem 'rubocop-minitest'
+# Testing
+group :test do
+  gem 'minitest'
+  gem 'minitest-rg'
+end
