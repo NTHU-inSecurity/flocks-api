@@ -20,6 +20,9 @@ gem 'rbnacl', '~>7.0'
 gem 'hirb'
 gem 'sequel', '~>5.55'
 
+# WEB SOCKETS
+gem 'faye', '~> 1'
+
 # Debugging
 gem 'pry'
 

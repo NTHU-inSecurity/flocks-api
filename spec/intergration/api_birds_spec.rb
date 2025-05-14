@@ -92,4 +92,30 @@ describe 'Test Bird Handling' do
       assert_nil(last_response.headers['Location'])
     end
   end
+
+  describe 'Updating Birds' do
+    before do
+      @flock = Flocks::Flock.first
+      @bird_data = DATA[:birds][1].merge({ account: Flocks::Account.first })
+      @req_header = { 'CONTENT_TYPE' => 'application/json' }
+      Flocks::AddBirdToFlock.call(flock_id: @flock.id, bird_data: @bird_data)
+    end
+    
+    it 'HAPPY: should be able to update the details of a single bird' do
+      new_bird_data = { 
+                        flock_id: @flock.id,
+                        username: @bird_data['username'],
+                        latitude: DATA[:birds][0]['latitude'],
+                        longitude: DATA[:birds][0]['longitude'],
+                        message: DATA[:birds][0]['message']
+                      }
+
+      post "api/v1/flocks/#{@flock.id}/birds/#{@bird_data['username']}", new_bird_data.to_json, @req_header
+      _(last_response.status).must_equal 200
+
+      result = JSON.parse last_response.body
+      _(result['data']['data']['attributes']['latitude']).must_equal new_bird_data[:latitude]
+      
+    end
+  end
 end

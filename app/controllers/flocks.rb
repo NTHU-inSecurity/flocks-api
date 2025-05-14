@@ -13,13 +13,39 @@ module Flocks
       routing.on String do |flock_id|
         routing.on 'birds' do
           @bird_route = "#{@api_root}/flocks/#{flock_id}/birds"
-          # GET api/v1/flocks/[ID]/birds/[username]
-          routing.get String do |username|
-            # SQL injection prevention
-            bird = Bird.where(flock_id: flock_id, username: username).first
-            bird ? bird.to_json : raise('Username not found')
-          rescue StandardError => e
-            routing.halt 404, { message: e.message }.to_json
+
+          routing.on String do |username|
+            # GET api/v1/flocks/[ID]/birds/[username]
+            routing.get do
+              # SQL injection prevention
+              bird = Bird.where(flock_id: flock_id, username: username).first
+              bird ? bird.to_json : raise('Username not found')
+            rescue StandardError => e
+              routing.halt 404, { message: e.message }.to_json
+            end
+            
+            # POST api/v1/flocks/[ID]/birds/[username]
+            routing.post do
+              new_data = JSON.parse(routing.body.read)
+
+              updated_bird = UpdateBird.call(flock_id: new_data['flock_id'], 
+                                             username: username, 
+                                             new_data: new_data)
+
+              if updated_bird
+                response.status = 200
+                response['Location'] = "#{@bird_route}/#{updated_bird.id}"
+                { message: 'Bird data updated', data: updated_bird }.to_json
+              else
+                routing.halt 400, 'Could not update bird data'
+              end
+            rescue Sequel::MassAssignmentRestriction
+              Api.logger.warn "Mass-assignment : #{new_data.keys}"
+              routing.halt 400, { message: 'Illegal Attributes' }.to_json
+            rescue StandardError
+              routing.halt 500, { message: 'Database error' }.to_json
+            end
+
           end
 
           # GET api/v1/flocks/[ID]/birds

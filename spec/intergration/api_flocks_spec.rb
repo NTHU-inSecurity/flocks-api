@@ -13,12 +13,12 @@ describe 'Test Flock Handling' do
     end
   end
 
-  describe 'Getting flocks' do
+  describe 'Getting flocks of a single account' do
     it 'HAPPY: should be able to get list of all flocks' do
       Flocks::CreateFlock.call(email: DATA[:accounts][0]['email'], flock_data: DATA[:flocks][0])
-      Flocks::CreateFlock.call(email: DATA[:accounts][1]['email'], flock_data: DATA[:flocks][1])
+      Flocks::CreateFlock.call(email: DATA[:accounts][0]['email'], flock_data: DATA[:flocks][1])
 
-      get 'api/v1/flocks'
+      get "api/v1/flocks?email=#{DATA[:accounts][0]['email']}"
       _(last_response.status).must_equal 200
 
       result = JSON.parse last_response.body
@@ -58,10 +58,11 @@ describe 'Test Flock Handling' do
     before do
       @req_header = { 'CONTENT_TYPE' => 'application/json' }
       @flock_data = DATA[:flocks][0]
+      @email = DATA[:accounts][0]['email']
     end
 
     it 'HAPPY: should be able to create new flocks' do
-      post 'api/v1/flocks', @flock_data.to_json, @req_header
+      post "api/v1/flocks?email=#{@email}", @flock_data.to_json, @req_header
       _(last_response.status).must_equal 201
       _(last_response.headers['Location'].size).must_be :>, 0
 
@@ -75,7 +76,7 @@ describe 'Test Flock Handling' do
     it 'SECURITY: should not create flock with mass assignment' do
       bad_data = @flock_data.clone
       bad_data['created_at'] = '1900-01-01'
-      post 'api/v1/flocks', bad_data.to_json, @req_header
+      post "api/v1/flocks?email=#{@email}", bad_data.to_json, @req_header
 
       _(last_response.status).must_equal 400
       _(last_response.headers['Location']).must_be_nil
