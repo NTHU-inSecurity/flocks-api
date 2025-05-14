@@ -13,9 +13,9 @@ module Flocks
       routing.on String do |flock_id|
         routing.on 'birds' do
           @bird_route = "#{@api_root}/flocks/#{flock_id}/birds"
+
           # GET api/v1/flocks/[ID]/birds/[username]
           routing.get String do |username|
-            # SQL injection prevention
             bird = Bird.where(flock_id: flock_id, username: username).first
             bird ? bird.to_json : raise('Username not found')
           rescue StandardError => e
@@ -24,7 +24,6 @@ module Flocks
 
           # GET api/v1/flocks/[ID]/birds
           routing.get do
-            # SQL injection prevention
             output = { data: Flock.first(id: flock_id).birds }
             JSON.pretty_generate(output)
           rescue ArgumentError
@@ -37,11 +36,17 @@ module Flocks
           routing.post do
             new_data = JSON.parse(routing.body.read)
 
-            # FIX: if you remove this, it won't work
             acc = Account.first(email: new_data['account']['attributes']['email'])
-            new_data['account'] = acc
+            raise 'Account not found' unless acc
 
-            new_bird = AddBirdToFlock.call(flock_id: flock_id, bird_data: new_data)
+            bird_data = {
+              username: new_data['username'],
+              latitude_secure: new_data['latitude_secure'],
+              longitude_secure: new_data['longitude_secure'],
+              account_id: acc.id
+            }
+
+            new_bird = AddBirdToFlock.call(flock_id: flock_id, bird_data: bird_data)
 
             if new_bird
               response.status = 201
@@ -50,17 +55,17 @@ module Flocks
             else
               routing.halt 400, 'Could not add bird'
             end
-          rescue Sequel::MassAssignmentRestriction
-            Api.logger.warn "Mass-assignment : #{new_data.keys}"
+          rescue Sequel::MassAssignmentRestriction => e
+            Api.logger.warn "Mass-assignment : #{e.full_message}"
             routing.halt 400, { message: 'Illegal Attributes' }.to_json
-          rescue StandardError
+          rescue StandardError => e
+            Api.logger.error "Bird creation error: #{e.full_message}"
             routing.halt 500, { message: 'Database error' }.to_json
           end
         end
 
         # GET api/v1/flocks/[ID]
         routing.get do
-          # SQL injection prevention
           flock = Flock.first(id: flock_id)
           flock ? flock.to_json : raise('Flock not found')
         rescue ArgumentError
@@ -77,7 +82,6 @@ module Flocks
         raise 'Account not found' unless account
 
         account_flocks = account.created_flocks
-
         output = { data: account_flocks }
         JSON.pretty_generate(output)
       rescue StandardError => e
@@ -87,11 +91,12 @@ module Flocks
       # POST api/v1/flocks?email=[email]
       routing.post do
         new_data = JSON.parse(routing.body.read).transform_keys(&:to_sym)
+
         email = routing.params['email']
         account = Account.where(email: email).first
         raise('Account not found') unless account
+
         new_flock = account.add_created_flock(new_data)
-        
         raise('Could not save flock') unless new_flock.save
 
         response.status = 201
