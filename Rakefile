@@ -3,7 +3,7 @@
 require 'rake/testtask'
 require './require_app'
 
-task default: :spec
+task default: [:spec]
 
 desc 'Tests API specs only'
 task :api_spec do
@@ -16,9 +16,14 @@ Rake::TestTask.new(:spec) do |t|
   t.warning = false
 end
 
+desc 'Rerun tests on live code changes'
+task :respec do
+  sh 'rerun -c rake spec'
+end
+
 desc 'Runs rubocop on tested code'
 task style: %i[spec audit] do
-  sh 'rubocop -A .'
+  sh 'rubocop .'
 end
 
 desc 'Update vulnerabilities lit and audit gems'
@@ -31,8 +36,9 @@ task release_check: %i[spec style audit] do
   puts "\nReady for release!"
 end
 
-task :print_env do
-  puts "Environment: #{ENV['RACK_ENV'] || 'development'}"
+# Helper task for other tasks to print environment name
+task :print_env do # rubocop:disable Rake/Desc
+  puts "Environment: #{ENV.fetch('RACK_ENV', nil) || 'development'}"
 end
 
 desc 'Run application console (pry)'
@@ -41,27 +47,32 @@ task console: :print_env do
 end
 
 namespace :db do # rubocop:disable Metrics/BlockLength
-  require_app(nil) # load nothing by default
-  require 'sequel'
+  task :load do # rubocop:disable Rake/Desc
+    require_app(nil) # loads config code files only
+    require 'sequel'
 
-  Sequel.extension :migration
-  app = Flocks::Api
-
-  desc 'Run migrations'
-  task migrate: :print_env do
-    puts 'Migrating database to latest'
-    Sequel::Migrator.run(app.DB, 'db/migrations')
+    Sequel.extension :migration
+    @app = Flocks::Api
   end
 
-  desc 'Delete database'
-  task :delete do
-    app.DB[:birds].delete
-    app.DB[:flocks].delete
+  task load_models: [:load] do
+    require_app(%w[lib models services])
+  end
+
+  desc 'Run migrations'
+  task migrate: %i[load print_env] do
+    puts 'Migrating database to latest'
+    Sequel::Migrator.run(@app.DB, 'db/migrations')
+  end
+
+  desc 'Destroy data in database; maintain tables'
+  task delete: [:load] do
+    Flocks::Account.dataset.destroy
   end
 
   desc 'Delete dev or test database file'
-  task :drop do
-    if app.environment == :production
+  task drop: [:load] do
+    if @app.environment == :production
       puts 'Cannot wipe production database!'
       return
     end
@@ -71,13 +82,9 @@ namespace :db do # rubocop:disable Metrics/BlockLength
     puts "Deleted #{db_filename}"
   end
 
-  task :load_models do
-    require_app(%w[lib models services])
-  end
-
   task reset_seeds: [:load_models] do
-    app.DB[:schema_seeds].delete if app.DB.tables.include?(:schema_seeds)
-    Flocks::Account.dataset.destroy
+    @app.DB[:schema_seeds].delete if @app.DB.tables.include?(:schema_seeds)
+    Credence::Account.dataset.destroy
   end
 
   desc 'Seeds the development database'
@@ -85,7 +92,7 @@ namespace :db do # rubocop:disable Metrics/BlockLength
     require 'sequel/extensions/seed'
     Sequel::Seed.setup(:development)
     Sequel.extension :seed
-    Sequel::Seeder.apply(app.DB, 'db/seeds')
+    Sequel::Seeder.apply(@app.DB, 'db/seeds')
   end
 
   desc 'Delete all data and reseed'
