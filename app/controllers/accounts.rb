@@ -7,10 +7,10 @@ module Flocks
   class Api < Roda
     route('accounts') do |routing|
       @account_route = "#{@api_root}/accounts"
-      routing.on String do |email|
+      routing.on String do |username|
         # GET api/v1/accounts/[username]
         routing.get do
-          account = Account.first(email:)
+          account = Account.first(username:)
           account ? account.to_json : raise('Account not found')
         rescue StandardError => e
           routing.halt 404, { message: e.message }.to_json
@@ -21,6 +21,7 @@ module Flocks
       routing.post do
         new_data = HttpRequest.new(routing).body_data
         new_account = Account.new(new_data)
+        
         raise('Could not save account') unless new_account.save_changes
 
         response.status = 201

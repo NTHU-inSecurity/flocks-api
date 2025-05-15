@@ -17,18 +17,18 @@ describe 'Test Authentication Routes' do
     end
 
     it 'HAPPY: should authenticate valid credentials' do
-      credentials = { email: @account_data['email'],
+      credentials = { username: @account_data['username'],
                       password: @account_data['password'] }
       post 'api/v1/auth/authenticate', credentials.to_json, @req_header
 
       auth_account = JSON.parse(last_response.body)['attributes']
       _(last_response.status).must_equal 200
-      _(auth_account['email']).must_equal(@account_data['email'])
+      _(auth_account['username']).must_equal(@account_data['username'])
       _(auth_account['id']).must_be_nil
     end
 
     it 'BAD: should not authenticate invalid password' do
-      credentials = { email: @account_data['email'],
+      credentials = { emusernameail: @account_data['username'],
                       password: 'fakepassword' }
 
       assert_output(/invalid/i, '') do

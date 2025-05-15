@@ -14,22 +14,22 @@ module Flocks
         routing.on 'birds' do
           @bird_route = "#{@api_root}/flocks/#{flock_id}/birds"
 
-          routing.on String do |username|
-            # GET api/v1/flocks/[ID]/birds/[username]
+          routing.on String do |bird_id|
+            # GET api/v1/flocks/[ID]/birds/[ID]
             routing.get do
               # SQL injection prevention
-              bird = Bird.where(flock_id: flock_id, username: username).first
-              bird ? bird.to_json : raise('Username not found')
+              bird = Bird.where(flock_id: flock_id, id: bird_id).first
+              bird ? bird.to_json : raise('Bird not found')
             rescue StandardError => e
               routing.halt 404, { message: e.message }.to_json
             end
             
-            # POST api/v1/flocks/[ID]/birds/[username]
+            # POST api/v1/flocks/[ID]/birds/[ID]
             routing.post do
               new_data = JSON.parse(routing.body.read)
 
-              updated_bird = UpdateBird.call(flock_id: new_data['flock_id'], 
-                                             username: username, 
+              updated_bird = UpdateBird.call(flock_id: flock_id, 
+                                             bird_id: bird_id, 
                                              new_data: new_data)
 
               if updated_bird
@@ -64,7 +64,7 @@ module Flocks
             new_data = JSON.parse(routing.body.read)
 
             # FIX: if you remove this, it won't work
-            acc = Account.first(email: new_data['account']['attributes']['email'])
+            acc = Account.first(username: new_data['account']['attributes']['username'])
             new_data['account'] = acc
 
             new_bird = AddBirdToFlock.call(flock_id: flock_id, bird_data: new_data)
@@ -96,10 +96,10 @@ module Flocks
         end
       end
 
-      # GET api/v1/flocks?email=[email]
+      # GET api/v1/flocks?username=[username]
       routing.get do
-        email = routing.params['email']
-        account = Account.first(email: email)
+        username = routing.params['username']
+        account = Account.first(username: username)
         raise 'Account not found' unless account
 
         account_flocks = account.created_flocks
@@ -110,11 +110,11 @@ module Flocks
         routing.halt 404, { message: e.message }.to_json
       end
 
-      # POST api/v1/flocks?email=[email]
+      # POST api/v1/flocks?username=[username]
       routing.post do
         new_data = JSON.parse(routing.body.read).transform_keys(&:to_sym)
-        email = routing.params['email']
-        account = Account.where(email: email).first
+        username = routing.params['username']
+        account = Account.where(username: username).first
         raise('Account not found') unless account
         new_flock = account.add_created_flock(new_data)
         

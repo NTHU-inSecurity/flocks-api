@@ -22,7 +22,7 @@ module Flocks
     plugin :timestamps, update_on_create: true
 
     plugin :whitelist_security
-    set_allowed_columns :password, :email
+    set_allowed_columns :password, :email, :username
 
     # Password handling
     def password=(new_password)
@@ -39,7 +39,8 @@ module Flocks
         {
           type: 'account',
           attributes: {
-            email:
+            email:,
+            username:
           }
         }, options
       )

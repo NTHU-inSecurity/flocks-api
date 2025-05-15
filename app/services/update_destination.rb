@@ -8,9 +8,9 @@ module Flocks
       def message = 'Only creators may update destination'
     end
 
-    def self.call(email:, flock_id:, new_destination:)
+    def self.call(username:, flock_id:, new_destination:)
       # check: whether account is creator in flock?
-      is_creator = Account.where(email:).first
+      is_creator = Account.where(username:).first
       flock = Flock.where(id: flock_id).first
       raise(UnauthorizedError) if flock.creator_id != is_creator.id
 

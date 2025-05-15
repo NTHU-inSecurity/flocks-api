@@ -23,7 +23,7 @@ end
 
 def create_flock
   Flocks::CreateFlock.call(
-    email: ACCOUNTS_INFO[0]['email'], flock_data: FLOCK_INFO[0]
+    username: ACCOUNTS_INFO[0]['username'], flock_data: FLOCK_INFO[0]
   )
   # ACCOUNTS_INFO.zip(FLOCK_INFO).each do |account_data, flock_data|
   #    Flocks::CreateFlock.call(

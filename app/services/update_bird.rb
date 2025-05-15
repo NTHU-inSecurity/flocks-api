@@ -8,8 +8,8 @@ module Flocks
       def message = 'Bird not found'
     end
 
-    def self.call(flock_id:, username:, new_data:)
-      bird = Bird.where(flock_id:, username:).first
+    def self.call(flock_id:, bird_id:, new_data:)
+      bird = Bird.where(flock_id:, id: bird_id).first
       raise NotFoundError unless bird
 
       bird.update(latitude: new_data['latitude'],

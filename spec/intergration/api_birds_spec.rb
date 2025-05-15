@@ -12,7 +12,7 @@ describe 'Test Bird Handling' do
       Flocks::Account.create(account_info)
     end
 
-    Flocks::CreateFlock.call(email: DATA[:accounts][0]['email'], flock_data: DATA[:flocks][0])
+    Flocks::CreateFlock.call(username: DATA[:accounts][0]['username'], flock_data: DATA[:flocks][0])
   end
 
   describe 'Getting Birds' do
@@ -36,12 +36,11 @@ describe 'Test Bird Handling' do
       bird_data = DATA[:birds][0].merge({ account: Flocks::Account.first })
       bird = Flocks::AddBirdToFlock.call(flock_id: @flock.id, bird_data: bird_data)
 
-      get "api/v1/flocks/#{@flock.id}/birds/#{bird.username}"
+      get "api/v1/flocks/#{@flock.id}/birds/#{bird.id}"
       _(last_response.status).must_equal 200
 
       result = JSON.parse last_response.body
 
-      _(result['data']['username']).must_equal bird_data[:username]
       _(result['data']['message']).must_equal bird_data[:message]
       _(result['data']['account_id']).must_equal bird_data[:account_id]
     end
@@ -52,11 +51,11 @@ describe 'Test Bird Handling' do
       _(last_response.status).must_equal 404
     end
 
-    it 'SECURITY: should prevent SQL injection in username parameter' do
+    it 'SECURITY: should prevent SQL injection in bird_id parameter' do
       bird_data = DATA[:birds][0].merge({ account: Flocks::Account.first })
       Flocks::AddBirdToFlock.call(flock_id: @flock.id, bird_data: bird_data)
 
-      get "/api/v1/flocks/#{@flock.id}/birds/%27%20OR%20username%20LIKE%20%27%25%27%20--"
+      get "/api/v1/flocks/#{@flock.id}/birds/%27%20OR%20id%20LIKE%20%27%25%27%20--"
       _(last_response.status).must_equal 404
     end
   end
@@ -77,7 +76,6 @@ describe 'Test Bird Handling' do
       bird = Flocks::Bird.first
 
       _(created['id']).must_equal bird.id
-      _(created['username']).must_equal @bird_data['username']
       _(created['message']).must_equal @bird_data['message']
       _(created['account_id']).must_equal @bird_data['account_id']
       _(created['flock_id']).must_equal @bird_data['flock_id']
@@ -99,23 +97,23 @@ describe 'Test Bird Handling' do
       @bird_data = DATA[:birds][1].merge({ account: Flocks::Account.first })
       @req_header = { 'CONTENT_TYPE' => 'application/json' }
       Flocks::AddBirdToFlock.call(flock_id: @flock.id, bird_data: @bird_data)
+      @bird = Flocks::Bird.first
     end
     
     it 'HAPPY: should be able to update the details of a single bird' do
       new_bird_data = { 
                         flock_id: @flock.id,
-                        username: @bird_data['username'],
                         latitude: DATA[:birds][0]['latitude'],
                         longitude: DATA[:birds][0]['longitude'],
                         message: DATA[:birds][0]['message']
                       }
 
-      post "api/v1/flocks/#{@flock.id}/birds/#{@bird_data['username']}", new_bird_data.to_json, @req_header
+      post "api/v1/flocks/#{@flock.id}/birds/#{@bird.id}", new_bird_data.to_json, @req_header
       _(last_response.status).must_equal 200
 
       result = JSON.parse last_response.body
       _(result['data']['data']['attributes']['latitude']).must_equal new_bird_data[:latitude]
-      
+
     end
   end
 end

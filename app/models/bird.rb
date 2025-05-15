@@ -9,8 +9,9 @@ module Flocks
     many_to_one :account
     many_to_one :flock
     plugin :timestamps
+    plugin :uuid, field: :id
     plugin :whitelist_security
-    set_allowed_columns :username, :message, :latitude, :longitude, :estimated_time, :account, :flock
+    set_allowed_columns :message, :latitude, :longitude, :estimated_time, :account, :flock
 
     # Secure getters and setters
     def message
@@ -45,7 +46,6 @@ module Flocks
             type: 'bird',
             attributes: {
               id:,
-              username:,
               message:,
               latitude:,
               longitude:,
