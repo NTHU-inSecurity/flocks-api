@@ -14,7 +14,7 @@ class SecureDB
     Base64.strict_encode64 key
   end
 
-  def self.setup(base_key, _base_salt)
+  def self.setup(base_key)
     raise NoDbKeyError unless base_key
 
     @key = Base64.strict_decode64(base_key)
