@@ -13,14 +13,14 @@ describe 'Test UpdateDestination Service' do
     end
 
     @accounts = Flocks::Account.all
-    @flock = Flocks::CreateFlock.call(email: @accounts[0].email, flock_data: DATA[:flocks][0])
+    @flock = Flocks::CreateFlock.call(username: @accounts[0].username, flock_data: DATA[:flocks][0])
     data = DATA[:birds].zip(@accounts).map { |bird_data, account| bird_data.merge({ account: account }) }
     data.each { |d| Flocks::AddBirdToFlock.call(flock_id: @flock.id, bird_data: d) }
   end
 
   it 'HAPPY: should be able to update destination' do
     Flocks::UpdateDestination.call(
-      email: @accounts[0].email,
+      username: @accounts[0].username,
       flock_id: Flocks::Flock.first.id,
       new_destination: 'https://new-destination.com'
     )
@@ -33,7 +33,7 @@ describe 'Test UpdateDestination Service' do
   it 'BAD: should return error if visitor attempts to update destination' do
     _(proc {
       Flocks::UpdateDestination.call(
-        email: @accounts[1].email,
+        username: @accounts[1].username,
         flock_id: Flocks::Flock.first.id,
         new_destination: 'https://new-destination.com'
       )

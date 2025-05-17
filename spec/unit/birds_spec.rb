@@ -10,7 +10,7 @@ describe 'Test Bird Handling' do
       Flocks::Account.create(account_info)
     end
 
-    Flocks::CreateFlock.call(email: DATA[:accounts][0]['email'], flock_data: DATA[:flocks][0])
+    Flocks::CreateFlock.call(username: DATA[:accounts][0]['username'], flock_data: DATA[:flocks][0])
   end
 
   it 'HAPPY: should retrieve correct data from database' do
@@ -19,7 +19,6 @@ describe 'Test Bird Handling' do
     new_bird = Flocks::AddBirdToFlock.call(flock_id: flock.id, bird_data: bird_data)
 
     bird = Flocks::Bird.find(id: new_bird.id)
-    _(bird.username).must_equal bird_data['username']
     _(bird.message).must_equal bird_data['message']
     _(bird.longitude).must_equal bird_data['longitude']
     _(bird.latitude).must_equal bird_data['latitude']

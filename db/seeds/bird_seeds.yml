@@ -1,18 +1,15 @@
 ---
-  - username: user_one
-    message: I'll be there in 10 minutes
+  - message: I'll be there in 10 minutes
     latitude: 24.787404
     longitude: 120.988308
     estimated_time: 600
 
-  - username: user_two
-    message: Running late, traffic is bad
+  - message: Running late, traffic is bad
     latitude: 24.792345
     longitude: 120.990123
     estimated_time: 1200
 
-  - username: user_three
-    message: Just leaving now
+  - message: Just leaving now
     latitude: 24.801234
     longitude: 120.978901
     estimated_time: 1800

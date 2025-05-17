@@ -1,7 +1,10 @@
 ---
-- email: yura@yandex.ru
+- username: yura
+  email: yura@yandex.ru
   password: pass@#123
-- email: test@gmail.com
+- username: shitpiss
+  email: test@gmail.com
   password: randompass
-- email: user@mail.ru
+- username: gleb
+  email: user@mail.ru
   password: passrand

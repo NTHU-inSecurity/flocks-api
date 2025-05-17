@@ -15,11 +15,11 @@ describe 'Test Account Handling' do
       account_data = DATA[:accounts][1]
       account = Flocks::Account.create(account_data)
 
-      get "/api/v1/accounts/#{account.email}"
+      get "/api/v1/accounts/#{account.username}"
       _(last_response.status).must_equal 200
 
       attributes = JSON.parse(last_response.body)['attributes']
-      _(attributes['email']).must_equal account.email
+      _(attributes['username']).must_equal account.username
       _(attributes['salt']).must_be_nil
       _(attributes['password']).must_be_nil
       _(attributes['password_hash']).must_be_nil
@@ -39,7 +39,7 @@ describe 'Test Account Handling' do
       created = JSON.parse(last_response.body)['data']['attributes']
       account = Flocks::Account.first
 
-      _(created['email']).must_equal @account_data['email']
+      _(created['username']).must_equal @account_data['username']
       _(account.password?(@account_data['password'])).must_equal true
       _(account.password?('not_really_the_password')).must_equal false
     end

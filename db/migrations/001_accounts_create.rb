@@ -7,7 +7,8 @@ Sequel.migration do
     create_table(:accounts) do
       uuid :id, primary_key: true
 
-      String :email, null: false, unique: true
+      String :username, null: false, unique: true
+      String :email
       String :password_digest
 
       DateTime :created_at

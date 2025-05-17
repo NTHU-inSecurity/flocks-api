@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 source 'https://rubygems.org'
+ruby File.read('.ruby-version').strip
 
 # WEB API
 gem 'base64'
@@ -19,6 +20,9 @@ gem 'rbnacl', '~>7.0'
 # DATABASE
 gem 'hirb'
 gem 'sequel', '~>5.55'
+
+# WEB SOCKETS
+gem 'faye', '~> 1'
 
 # Debugging
 gem 'pry'
@@ -45,6 +49,10 @@ group :development, :test do
   # Database
   gem 'sequel-seed'
   gem 'sqlite3', '~>1.6'
+end
+
+group :production do
+  gem 'pg'
 end
 
 # Testing

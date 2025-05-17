@@ -13,13 +13,39 @@ module Flocks
       routing.on String do |flock_id|
         routing.on 'birds' do
           @bird_route = "#{@api_root}/flocks/#{flock_id}/birds"
-          # GET api/v1/flocks/[ID]/birds/[username]
-          routing.get String do |username|
-            # SQL injection prevention
-            bird = Bird.where(flock_id: flock_id, username: username).first
-            bird ? bird.to_json : raise('Username not found')
-          rescue StandardError => e
-            routing.halt 404, { message: e.message }.to_json
+
+          routing.on String do |bird_id|
+            # GET api/v1/flocks/[ID]/birds/[ID]
+            routing.get do
+              # SQL injection prevention
+              bird = Bird.where(flock_id: flock_id, id: bird_id).first
+              bird ? bird.to_json : raise('Bird not found')
+            rescue StandardError => e
+              routing.halt 404, { message: e.message }.to_json
+            end
+            
+            # POST api/v1/flocks/[ID]/birds/[ID]
+            routing.post do
+              new_data = JSON.parse(routing.body.read)
+
+              updated_bird = UpdateBird.call(flock_id: flock_id, 
+                                             bird_id: bird_id, 
+                                             new_data: new_data)
+
+              if updated_bird
+                response.status = 200
+                response['Location'] = "#{@bird_route}/#{updated_bird.id}"
+                { message: 'Bird data updated', data: updated_bird }.to_json
+              else
+                routing.halt 400, 'Could not update bird data'
+              end
+            rescue Sequel::MassAssignmentRestriction
+              Api.logger.warn "Mass-assignment : #{new_data.keys}"
+              routing.halt 400, { message: 'Illegal Attributes' }.to_json
+            rescue StandardError
+              routing.halt 500, { message: 'Database error' }.to_json
+            end
+
           end
 
           # GET api/v1/flocks/[ID]/birds
@@ -38,7 +64,7 @@ module Flocks
             new_data = JSON.parse(routing.body.read)
 
             # FIX: if you remove this, it won't work
-            acc = Account.first(email: new_data['account']['attributes']['email'])
+            acc = Account.first(username: new_data['account']['attributes']['username'])
             new_data['account'] = acc
 
             new_bird = AddBirdToFlock.call(flock_id: flock_id, bird_data: new_data)
@@ -70,19 +96,29 @@ module Flocks
         end
       end
 
-      # GET api/v1/flocks
+      # GET api/v1/flocks?username=[username]
       routing.get do
-        output = { data: Flock.all }
+        username = routing.params['username']
+        account = Account.first(username: username)
+        raise 'Account not found' unless account
+
+        account_flocks = account.created_flocks
+
+        output = { data: account_flocks }
         JSON.pretty_generate(output)
-      rescue StandardError
-        routing.halt 404, { message: 'Could not find data about flocks' }.to_json
+      rescue StandardError => e
+        routing.halt 404, { message: e.message }.to_json
       end
 
-      # POST api/v1/flocks
+      # POST api/v1/flocks?username=[username]
       routing.post do
-        new_data = JSON.parse(routing.body.read)
-        new_flock = Flock.new(new_data)
-        raise('Could not save flock') unless new_flock.save_changes
+        new_data = JSON.parse(routing.body.read).transform_keys(&:to_sym)
+        username = routing.params['username']
+        account = Account.where(username: username).first
+        raise('Account not found') unless account
+        new_flock = account.add_created_flock(new_data)
+        
+        raise('Could not save flock') unless new_flock.save
 
         response.status = 201
         response['Location'] = "#{@flock_route}/#{new_flock.id}"
@@ -91,7 +127,7 @@ module Flocks
         Api.logger.warn "MASS-ASSIGNMENT: #{new_data.keys}"
         routing.halt 400, { message: 'Illegal Attributes' }.to_json
       rescue StandardError => e
-        Api.logger.error "UNKOWN ERROR: #{e.message}"
+        Api.logger.error "UNKNOWN ERROR: #{e.message}"
         routing.halt 500, { message: 'Unknown server error' }.to_json
       end
     end
