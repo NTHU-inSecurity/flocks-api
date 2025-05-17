@@ -10,6 +10,25 @@ module Flocks
     route('flocks') do |routing|
       @flock_route = "#{@api_root}/flocks"
 
+    # NEW ROUTE: Get all flocks for current user via auth_token
+    # GET api/v1/flocks/my
+    routing.is 'my' do
+      routing.get do
+        account_id = @auth[:account] ? @auth[:account]['id'] : nil
+        raise 'Not authorized' unless account_id
+        
+        account = Account.first(id: account_id)
+        raise 'Account not found' unless account
+        
+        account_flocks = account.created_flocks
+        
+        output = { data: account_flocks }
+        JSON.pretty_generate(output)
+      rescue StandardError => e
+        routing.halt 404, { message: e.message }.to_json
+      end
+    end
+
       routing.on String do |flock_id|
         routing.on 'birds' do
           @bird_route = "#{@api_root}/flocks/#{flock_id}/birds"
@@ -98,14 +117,19 @@ module Flocks
 
       # GET api/v1/flocks?username=[username]
       routing.get do
-        username = routing.params['username']
-        account = Account.first(username: username)
-        raise 'Account not found' unless account
+        if routing.params['username']
+          username = routing.params['username']
+          account = Account.first(username: username)
+          raise 'Account not found' unless account
 
-        account_flocks = account.created_flocks
+          account_flocks = account.created_flocks
 
-        output = { data: account_flocks }
-        JSON.pretty_generate(output)
+          output = { data: account_flocks }
+          JSON.pretty_generate(output)
+        else
+          output = { data: Flock.all }
+          JSON.pretty_generate(output)
+        end
       rescue StandardError => e
         routing.halt 404, { message: e.message }.to_json
       end
@@ -113,9 +137,14 @@ module Flocks
       # POST api/v1/flocks?username=[username]
       routing.post do
         new_data = JSON.parse(routing.body.read).transform_keys(&:to_sym)
-        username = routing.params['username']
-        account = Account.where(username: username).first
+        
+        # use auth token to create a new flock
+        account_id = @auth[:account] ? @auth[:account]['id'] : nil
+        raise('Not authorized') unless account_id
+        
+        account = Account.first(id: account_id)
         raise('Account not found') unless account
+        
         new_flock = account.add_created_flock(new_data)
         
         raise('Could not save flock') unless new_flock.save
