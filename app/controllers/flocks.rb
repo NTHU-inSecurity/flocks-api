@@ -114,18 +114,17 @@ module Flocks
       routing.post do
         new_data = JSON.parse(routing.body.read).transform_keys(&:to_sym)
         username = routing.params['username']
-        account = Account.where(username: username).first
-        raise('Account not found') unless account
-        new_flock = account.add_created_flock(new_data)
-        
-        raise('Could not save flock') unless new_flock.save
+
+        new_flock = Flocks::CreateFlock.call(username: username, flock_data: new_data)
 
         response.status = 201
         response['Location'] = "#{@flock_route}/#{new_flock.id}"
         { message: 'Flock saved', data: new_flock }.to_json
-      rescue Sequel::MassAssignmentRestriction
+
+      rescue Sequel::MassAssignmentRestriction => e
         Api.logger.warn "MASS-ASSIGNMENT: #{new_data.keys}"
         routing.halt 400, { message: 'Illegal Attributes' }.to_json
+
       rescue StandardError => e
         Api.logger.error "UNKNOWN ERROR: #{e.message}"
         routing.halt 500, { message: 'Unknown server error' }.to_json
