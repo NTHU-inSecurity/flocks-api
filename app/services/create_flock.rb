@@ -1,31 +1,32 @@
 # frozen_string_literal: true
 
+require_relative 'add_bird_to_flock'
+
 module Flocks
   class CreateFlock
     def self.call(username:, flock_data:)
       account = Account.first(username: username)
       raise 'Account not found' unless account
 
-      # Optional bird-related fields, fallback to defaults
-      latitude = flock_data.delete(:latitude) || '0.0000'
+      # Optional bird-related fields
+      latitude  = flock_data.delete(:latitude)  || '0.0000'
       longitude = flock_data.delete(:longitude) || '0.0000'
-      message = flock_data.delete(:message) || ''
+      message   = flock_data.delete(:message)   || ''
 
-      # Create flock (remaining keys only for flock)
-      flock = account.add_created_flock(flock_data)
-      raise 'Could not save flock' unless flock&.save
+      # Create the flock
+      flock = Flocks::Flock.new(destination_url: flock_data[:destination_url])
+      flock.creator = account
+      raise 'Could not save flock' unless flock.save
 
-      # Add creator as bird
+      # Delegate bird creation to AddBirdToFlock
       bird_data = {
-        username: username,
-        latitude_secure: SecureDB.encrypt(latitude),
-        longitude_secure: SecureDB.encrypt(longitude),
-        message_secure: SecureDB.encrypt(message),
-        account_id: account.id,
-        flock_id: flock.id
+        latitude: latitude,
+        longitude: longitude,
+        message: message,
+        account_id: account.id
       }
 
-      Flocks::Bird.new(bird_data).tap(&:save)
+      Flocks::AddBirdToFlock.call(flock_id: flock.id, bird_data: bird_data)
 
       flock
     end
