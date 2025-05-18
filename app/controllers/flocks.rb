@@ -61,12 +61,12 @@ module Flocks
 
           # POST api/v1/flocks/[ID]/birds
           routing.post do
-            new_data = JSON.parse(routing.body.read)
+            new_data = JSON.parse(routing.body.read).transform_keys(&:to_sym)
 
             # FIX: if you remove this, it won't work
             acc = Account.first(username: new_data['account']['attributes']['username'])
-            new_data['account'] = acc
-
+            Api.logger.info "Account ID: #{acc.id}"
+            new_data['account_id'] = acc.id
             new_bird = AddBirdToFlock.call(flock_id: flock_id, bird_data: new_data)
 
             if new_bird
