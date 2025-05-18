@@ -100,10 +100,10 @@ module Flocks
         account = Account.first(username: username)
         raise 'Account not found' unless account
 
-        account_flocks = account.created_flocks
-
-        output = { data: account_flocks }
+        all_flocks = Flocks::Bird.where(account_id:account.id).map(&:flock)
+        output = { data: all_flocks }
         JSON.pretty_generate(output)
+
       rescue StandardError => e
         routing.halt 404, { message: e.message }.to_json
       end
