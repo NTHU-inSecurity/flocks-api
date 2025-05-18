@@ -3,6 +3,7 @@
 require 'roda'
 require 'json'
 require 'logger'
+require_relative '../helpers/symbolize_helper'
 
 module Flocks
   # Web controller for Flocks API
