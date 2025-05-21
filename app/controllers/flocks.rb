@@ -94,9 +94,9 @@ module Flocks
         end
       end
 
-      # GET api/v1/flocks?username=[username]
+      # GET api/v1/flocks
       routing.get do
-        username = routing.params['username']
+        username = @auth_account['username']
         account = Account.first(username: username)
         raise 'Account not found' unless account
 
@@ -108,7 +108,7 @@ module Flocks
         routing.halt 404, { message: e.message }.to_json
       end
 
-      # POST api/v1/flocks?username=[username]
+      # POST api/v1/flocks
       routing.post do
         new_data = Flocks::Helper.deep_symbolize(JSON.parse(routing.body.read))
         username = routing.params['username']
