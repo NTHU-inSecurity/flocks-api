@@ -111,7 +111,7 @@ module Flocks
       # POST api/v1/flocks
       routing.post do
         new_data = Flocks::Helper.deep_symbolize(JSON.parse(routing.body.read))
-        username = routing.params['username']
+        username = @auth_account['username']
 
         new_flock = Flocks::CreateFlock.call(username: username, flock_data: new_data)
 
