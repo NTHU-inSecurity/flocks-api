@@ -6,6 +6,7 @@ require 'sequel'
 require 'logger'
 
 require_relative '../app/lib/secure_db'
+require_relative '../app/lib/auth_token'
 
 module Flocks
   # Configuration for the API
@@ -31,6 +32,8 @@ module Flocks
 
       # Load crypto keys
       SecureDB.setup(ENV.delete('DB_KEY'))
+      AuthToken.setup(ENV.fetch('MSG_KEY')) # Load crypto key
+
 
       # Custom events logging
       LOGGER = Logger.new($stderr)
