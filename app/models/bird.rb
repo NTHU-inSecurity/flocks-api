@@ -11,7 +11,7 @@ module Flocks
     plugin :timestamps
     plugin :uuid, field: :id
     plugin :whitelist_security
-    set_allowed_columns :message, :latitude, :longitude, :estimated_time, :account, :flock
+    set_allowed_columns :message, :latitude, :longitude, :estimated_time, :account_id, :flock_id
 
     # Secure getters and setters
     def message

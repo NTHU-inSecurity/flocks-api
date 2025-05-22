@@ -64,7 +64,8 @@ module Flocks
             new_data = Flocks::Helper.deep_symbolize(JSON.parse(routing.body.read))
             acc = Account.first(username: new_data[:account][:attributes][:username])
             new_data[:account_id] = acc.id
-            
+            new_data.delete(:account)
+
             new_bird = AddBirdToFlock.call(flock_id: flock_id, bird_data: new_data)
 
             if new_bird
@@ -77,8 +78,8 @@ module Flocks
           rescue Sequel::MassAssignmentRestriction
             Api.logger.warn "Mass-assignment : #{new_data.keys}"
             routing.halt 400, { message: 'Illegal Attributes' }.to_json
-          rescue StandardError
-            routing.halt 500, { message: 'Database error' }.to_json
+          rescue StandardError => e
+            routing.halt 500, { message: 'Database error: ' }.to_json
           end
         end
 
@@ -112,6 +113,12 @@ module Flocks
       routing.post do
         new_data = Flocks::Helper.deep_symbolize(JSON.parse(routing.body.read))
         username = @auth_account['username']
+
+        # Reject illegal mass-assignment attempts from API input
+        rejected_keys = [:created_at, :updated_at, :id, :account_id, :flock_id]
+        if (new_data.keys & rejected_keys).any?
+          routing.halt 400, { message: 'Illegal Attributes' }.to_json
+        end
 
         new_flock = Flocks::CreateFlock.call(username: username, flock_data: new_data)
 
