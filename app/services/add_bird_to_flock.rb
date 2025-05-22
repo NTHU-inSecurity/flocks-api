@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 
 module Flocks
-  # Service object to add a new bird to a flock
   class AddBirdToFlock
     def self.call(flock_id:, bird_data:)
-      Flock.where(id: flock_id).first.add_bird(bird_data)
-      # CONSIDER: should add error handling?
+      bird_data[:flock_id] = flock_id
+      bird = Flocks::Bird.new(bird_data)
+      raise 'Could not save bird' unless bird.save
+      bird
     end
   end
 end

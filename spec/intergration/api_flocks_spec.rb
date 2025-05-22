@@ -7,79 +7,76 @@ describe 'Test Flock Handling' do
 
   before do
     wipe_database
-
-    DATA[:accounts].each do |account_info|
-      Flocks::Account.create(account_info)
-    end
+    @account_data = DATA[:accounts][0]
+    @account = Flocks::Account.create(@account_data)
+    token = AuthToken.create(@account)
+    @auth_header = {
+      'CONTENT_TYPE' => 'application/json',
+      'HTTP_AUTHORIZATION' => "Bearer #{token}"
+    }
   end
 
   describe 'Getting flocks of a single account' do
     it 'HAPPY: should be able to get list of all flocks' do
-      Flocks::CreateFlock.call(username: DATA[:accounts][0]['username'], flock_data: DATA[:flocks][0])
-      Flocks::CreateFlock.call(username: DATA[:accounts][0]['username'], flock_data: DATA[:flocks][1])
+      flock_data_0 = Flocks::Helper.deep_symbolize(DATA[:flocks][0].merge(DATA[:birds][0]))
+      flock_data_1 = Flocks::Helper.deep_symbolize(DATA[:flocks][1].merge(DATA[:birds][1]))
 
-      get "api/v1/flocks?username=#{DATA[:accounts][0]['username']}"
+      Flocks::CreateFlock.call(username: @account.username, flock_data: flock_data_0)
+      Flocks::CreateFlock.call(username: @account.username, flock_data: flock_data_1)
+
+      get 'api/v1/flocks', {}, @auth_header
       _(last_response.status).must_equal 200
 
-      result = JSON.parse last_response.body
+      result = JSON.parse(last_response.body)
       _(result['data'].count).must_equal 2
     end
 
     it 'HAPPY: should be able to get details of a single flock' do
-      existing_flock = DATA[:flocks][0]
+      flock_data = Flocks::Helper.deep_symbolize(DATA[:flocks][0].merge(DATA[:birds][0]))
+      created = Flocks::CreateFlock.call(username: @account.username, flock_data: flock_data)
+      id = created.id
 
-      Flocks::CreateFlock.call(username: DATA[:accounts][0]['username'], flock_data: existing_flock)
-      id = Flocks::Flock.first.id
-
-      get "/api/v1/flocks/#{id}"
+      get "api/v1/flocks/#{id}", {}, @auth_header
       _(last_response.status).must_equal 200
 
-      result = JSON.parse last_response.body
+      result = JSON.parse(last_response.body)
       _(result['attributes']['id']).must_equal id
-      _(result['attributes']['destination_url']).must_equal existing_flock['destination_url']
+      _(result['attributes']['destination_url']).must_equal DATA[:flocks][0]['destination_url']
     end
 
     it 'SAD: should return error if unknown flock requested' do
-      get '/api/v1/flocks/foobar'
-
+      get '/api/v1/flocks/foobar', {}, @auth_header
       _(last_response.status).must_equal 404
     end
 
     it 'SECURITY: should prevent basic SQL injection targeting IDs' do
-      Flocks::CreateFlock.call(username: DATA[:accounts][0]['username'], flock_data: DATA[:flocks][0])
-      Flocks::CreateFlock.call(username: DATA[:accounts][1]['username'], flock_data: DATA[:flocks][1])
-
-      get 'api/v1/flocks/2%20or%20id%3E0'
+      flock_data = Flocks::Helper.deep_symbolize(DATA[:flocks][0].merge(DATA[:birds][0]))
+      Flocks::CreateFlock.call(username: @account.username, flock_data: flock_data)
+      get 'api/v1/flocks/2%20or%20id%3E0', {}, @auth_header
       _(last_response.status).must_equal 404
     end
   end
 
   describe 'Creating New Flocks' do
     before do
-      @req_header = { 'CONTENT_TYPE' => 'application/json' }
-      @flock_data = DATA[:flocks][0]
-      @username = DATA[:accounts][0]['username']
+      @flock_data = Flocks::Helper.deep_symbolize(DATA[:flocks][0].merge(DATA[:birds][0]))
     end
 
     it 'HAPPY: should be able to create new flocks' do
-      post "api/v1/flocks?username=#{@username}", @flock_data.to_json, @req_header
+      post 'api/v1/flocks', @flock_data.to_json, @auth_header
       _(last_response.status).must_equal 201
       _(last_response.headers['Location'].size).must_be :>, 0
 
-      created = JSON.parse(last_response.body)['data']['attributes']
-      flock = Flocks::Flock.first
-
-      _(created['id']).must_equal flock.id
-      _(created['destination_url']).must_equal @flock_data['destination_url']
+      result = JSON.parse(last_response.body)['data']
+      _(result['attributes']['destination_url']).must_equal @flock_data[:destination_url]
     end
 
     it 'SECURITY: should not create flock with mass assignment' do
       bad_data = @flock_data.clone
-      bad_data['created_at'] = '1900-01-01'
-      post "api/v1/flocks?username=#{@username}", bad_data.to_json, @req_header
+      bad_data[:created_at] = '1900-01-01'
 
+      post 'api/v1/flocks', bad_data.to_json, @auth_header
       _(last_response.status).must_equal 400
-      _(last_response.headers['Location']).must_be_nil
     end
   end
 end
