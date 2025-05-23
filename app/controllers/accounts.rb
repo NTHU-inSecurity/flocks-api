@@ -21,8 +21,8 @@ module Flocks
       routing.post do
         new_data = HttpRequest.new(routing).body_data
         new_account = Account.new(new_data)
-        
-        raise('Could not save account') unless new_account.save_changes
+
+        raise('Could not save account') unless new_account.save
 
         response.status = 201
         response['Location'] = "#{@account_route}/#{new_account.id}"

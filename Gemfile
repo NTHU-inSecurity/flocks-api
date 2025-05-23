@@ -17,6 +17,9 @@ gem 'rake'
 # SECURITY
 gem 'rbnacl', '~>7.0'
 
+# OTHER
+gem 'brevo'
+
 # DATABASE
 gem 'hirb'
 gem 'sequel', '~>5.55'

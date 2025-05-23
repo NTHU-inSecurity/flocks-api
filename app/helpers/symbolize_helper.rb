@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# ASK: what's this shit for
 module Flocks
   module Helper
     def self.deep_symbolize(obj)
