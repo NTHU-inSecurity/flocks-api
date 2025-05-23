@@ -23,7 +23,7 @@ end
 
 desc 'Runs rubocop on tested code'
 task style: %i[spec audit] do
-  sh 'rubocop .'
+  sh 'rubocop -A .'
 end
 
 desc 'Update vulnerabilities lit and audit gems'
@@ -37,7 +37,7 @@ task release_check: %i[spec style audit] do
 end
 
 # Helper task for other tasks to print environment name
-task :print_env do # rubocop:disable Rake/Desc
+task :print_env do
   puts "Environment: #{ENV.fetch('RACK_ENV', nil) || 'development'}"
 end
 
@@ -47,7 +47,7 @@ task console: :print_env do
 end
 
 namespace :db do # rubocop:disable Metrics/BlockLength
-  task :load do # rubocop:disable Rake/Desc
+  task :load do
     require_app(nil) # loads config code files only
     require 'sequel'
 

@@ -26,7 +26,7 @@ describe 'Test Authentication Routes' do
       _(last_response.status).must_equal 200
 
       response = JSON.parse(last_response.body)
-      #puts "DEBUG: #{response.inspect}"
+      # puts "DEBUG: #{response.inspect}"
 
       account_info = response['attributes']['account']['attributes']
       auth_token   = response['attributes']['auth_token']

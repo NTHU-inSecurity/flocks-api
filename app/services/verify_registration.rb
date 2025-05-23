@@ -22,7 +22,7 @@ module Flocks
     def call
       raise(InvalidRegistration, 'Username exists') unless username_available?
       raise(InvalidRegistration, 'Email already used') unless email_available?
-      
+
       send_email_verification
     end
 
@@ -37,36 +37,35 @@ module Flocks
     def html_email
       <<~END_EMAIL
         <H1>Flocks App Registration Received</H1>
-        <p>Please <a href=\"#{@registration[:verification_url]}\">click here</a>
+        <p>Please <a href="#{@registration[:verification_url]}">click here</a>
         to validate your email.
         You will be asked to set a password to activate your account.</p>
       END_EMAIL
     end
 
     def mail_json # rubocop:disable Metrics/MethodLength
-        {
-            sender: {
-              name: "Flocks",
-              email: from_email
-            },
-            to: [
-              {
-                email: @registration[:email],
-                name: "User"
-              }
-            ],
-            subject: "Please verify your email address",
-            htmlContent: html_email
+      {
+        sender: {
+          name: 'Flocks',
+          email: from_email
+        },
+        to: [
+          {
+            email: @registration[:email],
+            name: 'User'
           }
+        ],
+        subject: 'Please verify your email address',
+        htmlContent: html_email
+      }
     end
 
     def send_email_verification
-
       response = HTTP.headers(
-        "api-key" => mail_api_key,
-        "Content-Type" => "application/json",
-        "Accept" => "application/json"
-      ).post("https://api.brevo.com/v3/smtp/email", body: mail_json.to_json)
+        'api-key' => mail_api_key,
+        'Content-Type' => 'application/json',
+        'Accept' => 'application/json'
+      ).post('https://api.brevo.com/v3/smtp/email', body: mail_json.to_json)
 
       raise EmailProviderError if response.status >= 300
     rescue EmailProviderError

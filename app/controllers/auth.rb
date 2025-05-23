@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'roda'
-require_relative './app'
+require_relative 'app'
 
 module Flocks
   # Web controller for Flocks API
@@ -11,7 +11,7 @@ module Flocks
         # POST api/v1/auth/register
         routing.post do
           reg_data = JSON.parse(request.body.read, symbolize_names: true)
-          
+
           VerifyRegistration.new(reg_data).call
 
           response.status = 202

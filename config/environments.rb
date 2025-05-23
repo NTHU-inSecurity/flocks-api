@@ -34,7 +34,6 @@ module Flocks
       SecureDB.setup(ENV.delete('DB_KEY'))
       AuthToken.setup(ENV.fetch('MSG_KEY')) # Load crypto key
 
-
       # Custom events logging
       LOGGER = Logger.new($stderr)
       def self.logger = LOGGER

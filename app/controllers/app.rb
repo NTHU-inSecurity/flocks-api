@@ -18,7 +18,7 @@ module Flocks
       response['Content-Type'] = 'application/json'
 
       request = HttpRequest.new(routing)
-      
+
       request.secure? ||
         routing.halt(403, { message: 'TLS/SSL Required' }.to_json)
 

@@ -23,13 +23,13 @@ module Flocks
             rescue StandardError => e
               routing.halt 404, { message: e.message }.to_json
             end
-            
+
             # POST api/v1/flocks/[ID]/birds/[ID]
             routing.post do
               new_data = JSON.parse(routing.body.read)
 
-              updated_bird = UpdateBird.call(flock_id: flock_id, 
-                                             bird_id: bird_id, 
+              updated_bird = UpdateBird.call(flock_id: flock_id,
+                                             bird_id: bird_id,
                                              new_data: new_data)
 
               if updated_bird
@@ -45,7 +45,6 @@ module Flocks
             rescue StandardError
               routing.halt 500, { message: 'Database error' }.to_json
             end
-
           end
 
           # GET api/v1/flocks/[ID]/birds
@@ -78,7 +77,7 @@ module Flocks
           rescue Sequel::MassAssignmentRestriction
             Api.logger.warn "Mass-assignment : #{new_data.keys}"
             routing.halt 400, { message: 'Illegal Attributes' }.to_json
-          rescue StandardError => e
+          rescue StandardError
             routing.halt 500, { message: 'Database error: ' }.to_json
           end
         end
@@ -101,10 +100,9 @@ module Flocks
         account = Account.first(username: username)
         raise 'Account not found' unless account
 
-        all_flocks = Flocks::Bird.where(account_id:account.id).map(&:flock)
+        all_flocks = Flocks::Bird.where(account_id: account.id).map(&:flock)
         output = { data: all_flocks }
         JSON.pretty_generate(output)
-
       rescue StandardError => e
         routing.halt 404, { message: e.message }.to_json
       end
@@ -115,21 +113,18 @@ module Flocks
         username = @auth_account['username']
 
         # Reject illegal mass-assignment attempts from API input
-        rejected_keys = [:created_at, :updated_at, :id, :account_id, :flock_id]
-        if (new_data.keys & rejected_keys).any?
-          routing.halt 400, { message: 'Illegal Attributes' }.to_json
-        end
+        # ASK: why the fuck is it here
+        rejected_keys = %i[created_at updated_at id account_id flock_id]
+        routing.halt 400, { message: 'Illegal Attributes' }.to_json if new_data.keys.intersect?(rejected_keys)
 
         new_flock = Flocks::CreateFlock.call(username: username, flock_data: new_data)
 
         response.status = 201
         response['Location'] = "#{@flock_route}/#{new_flock.id}"
         { message: 'Flock saved', data: new_flock }.to_json
-
-      rescue Sequel::MassAssignmentRestriction => e
+      rescue Sequel::MassAssignmentRestriction
         Api.logger.warn "MASS-ASSIGNMENT: #{new_data.keys}"
         routing.halt 400, { message: 'Illegal Attributes' }.to_json
-
       rescue StandardError => e
         Api.logger.error "UNKNOWN ERROR: #{e.message}"
         routing.halt 500, { message: 'Unknown server error' }.to_json

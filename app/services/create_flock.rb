@@ -9,6 +9,7 @@ module Flocks
       raise 'Account not found' unless account
 
       # Optional bird-related fields
+      # ASK: why would you put it here, it's waste of space
       latitude  = flock_data.delete(:latitude)  || '0.0000'
       longitude = flock_data.delete(:longitude) || '0.0000'
       message   = flock_data.delete(:message)   || ''
