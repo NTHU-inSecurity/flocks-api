@@ -18,8 +18,8 @@ describe 'Test Flock Handling' do
 
   describe 'Getting flocks of a single account' do
     it 'HAPPY: should be able to get list of all flocks' do
-      flock_data_0 = Flocks::Helper.deep_symbolize(DATA[:flocks][0].merge(DATA[:birds][0]))
-      flock_data_1 = Flocks::Helper.deep_symbolize(DATA[:flocks][1].merge(DATA[:birds][1]))
+      flock_data_0 = Flocks::Helper.deep_symbolize(DATA[:flocks][0])
+      flock_data_1 = Flocks::Helper.deep_symbolize(DATA[:flocks][1])
 
       Flocks::CreateFlock.call(username: @account.username, flock_data: flock_data_0)
       Flocks::CreateFlock.call(username: @account.username, flock_data: flock_data_1)
@@ -32,7 +32,7 @@ describe 'Test Flock Handling' do
     end
 
     it 'HAPPY: should be able to get details of a single flock' do
-      flock_data = Flocks::Helper.deep_symbolize(DATA[:flocks][0].merge(DATA[:birds][0]))
+      flock_data = Flocks::Helper.deep_symbolize(DATA[:flocks][0])
       created = Flocks::CreateFlock.call(username: @account.username, flock_data: flock_data)
       id = created.id
 
@@ -50,7 +50,7 @@ describe 'Test Flock Handling' do
     end
 
     it 'SECURITY: should prevent basic SQL injection targeting IDs' do
-      flock_data = Flocks::Helper.deep_symbolize(DATA[:flocks][0].merge(DATA[:birds][0]))
+      flock_data = Flocks::Helper.deep_symbolize(DATA[:flocks][0])
       Flocks::CreateFlock.call(username: @account.username, flock_data: flock_data)
       get 'api/v1/flocks/2%20or%20id%3E0', {}, @auth_header
       _(last_response.status).must_equal 404
@@ -59,7 +59,7 @@ describe 'Test Flock Handling' do
 
   describe 'Creating New Flocks' do
     before do
-      @flock_data = Flocks::Helper.deep_symbolize(DATA[:flocks][0].merge(DATA[:birds][0]))
+      @flock_data = Flocks::Helper.deep_symbolize(DATA[:flocks][0])
     end
 
     it 'HAPPY: should be able to create new flocks' do

@@ -97,10 +97,16 @@ module Flocks
       # GET api/v1/flocks
       routing.get do
         username = @auth_account['username']
-        account = Account.first(username: username)
+        account = Flocks::Account.first(username: username)
         raise 'Account not found' unless account
 
-        all_flocks = Flocks::Bird.where(account_id: account.id).map(&:flock)
+        created_flocks = account.created_flocks
+        joined_flocks = Flocks::Bird
+                          .where(account_id: account.id)
+                          .map(&:flock)
+                          .reject { |flock| flock.account_id == account.id }
+
+        all_flocks = created_flocks + joined_flocks
         output = { data: all_flocks }
         JSON.pretty_generate(output)
       rescue StandardError => e
@@ -111,11 +117,6 @@ module Flocks
       routing.post do
         new_data = Flocks::Helper.deep_symbolize(JSON.parse(routing.body.read))
         username = @auth_account['username']
-
-        # Reject illegal mass-assignment attempts from API input
-        # ASK: why the fuck is it here
-        rejected_keys = %i[created_at updated_at id account_id flock_id]
-        routing.halt 400, { message: 'Illegal Attributes' }.to_json if new_data.keys.intersect?(rejected_keys)
 
         new_flock = Flocks::CreateFlock.call(username: username, flock_data: new_data)
 
