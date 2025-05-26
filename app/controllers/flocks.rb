@@ -104,12 +104,13 @@ module Flocks
         joined_flocks = Flocks::Bird
                           .where(account_id: account.id)
                           .map(&:flock)
-                          .reject { |flock| flock.account_id == account.id }
+                          .reject { |flock| flock.creator.id == account.id }
 
         all_flocks = created_flocks + joined_flocks
         output = { data: all_flocks }
         JSON.pretty_generate(output)
       rescue StandardError => e
+        puts "[ERROR] #{e.class}: #{e.message}"
         routing.halt 404, { message: e.message }.to_json
       end
 
