@@ -19,7 +19,7 @@ describe 'Test Bird Handling' do
 
     @flock = Flocks::CreateFlock.call(
       username: @accounts[0].username,
-      flock_data: Flocks::Helper.deep_symbolize(DATA[:flocks][0].merge(DATA[:birds][0]))
+      flock_data: Flocks::Helper.deep_symbolize(DATA[:flocks][0])
     )
 
     @auth_header = auth_header_for(@accounts[0])
@@ -35,7 +35,7 @@ describe 'Test Bird Handling' do
       get "api/v1/flocks/#{@flock.id}/birds", {}, @auth_header
       _(last_response.status).must_equal 200
       result = JSON.parse(last_response.body)
-      _(result['data'].count).must_equal 3
+      _(result['data'].count).must_equal 2
     end
 
     it 'HAPPY: should be able to get details of a single bird' do
@@ -69,7 +69,7 @@ describe 'Test Bird Handling' do
 
       @flock = Flocks::CreateFlock.call(
         username: @accounts[1].username,
-        flock_data: Flocks::Helper.deep_symbolize(DATA[:flocks][1].merge(DATA[:birds][1]))
+        flock_data: Flocks::Helper.deep_symbolize(DATA[:flocks][1])
       )
 
       @bird_data = {

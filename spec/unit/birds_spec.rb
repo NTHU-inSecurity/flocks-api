@@ -9,17 +9,11 @@ describe 'Test Bird Handling' do
     # Seed accounts
     DATA[:accounts].each { |account_info| Flocks::Account.create(account_info) }
 
-    # Create flock with real bird data from seed
+    # Create flock and include real bird data from seed
     @creator = Flocks::Account.first
-    @flock = Flocks::CreateFlock.call(
-      username: @creator.username,
-      flock_data: {
-        destination_url: DATA[:flocks][0]['destination_url'],
-        message: DATA[:birds][0]['message'],
-        latitude: DATA[:birds][0]['latitude'],
-        longitude: DATA[:birds][0]['longitude']
-      }
-    )
+    @flock = Flocks::CreateFlock.call( username: @creator.username, flock_data: DATA[:flocks][0])
+    bird_data = DATA[:birds][0].transform_keys(&:to_sym).merge(account_id: @creator.id)
+    Flocks::AddBirdToFlock.call(flock_id: @flock.id, bird_data: bird_data)
   end
 
   it 'HAPPY: should retrieve correct data from database' do
