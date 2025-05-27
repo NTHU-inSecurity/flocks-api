@@ -8,21 +8,13 @@ module Flocks
   class Api < Roda
     # rubocop:disable Metrics/BlockLength
     route('flocks') do |routing|
+
       @flock_route = "#{@api_root}/flocks"
 
       routing.on String do |flock_id|
         routing.on 'birds' do
           @bird_route = "#{@api_root}/flocks/#{flock_id}/birds"
-
           routing.on String do |bird_id|
-            # GET api/v1/flocks/[ID]/birds/[ID]
-            routing.get do
-              # SQL injection prevention
-              bird = Bird.where(flock_id: flock_id, id: bird_id).first
-              bird ? bird.to_json : raise('Bird not found')
-            rescue StandardError => e
-              routing.halt 404, { message: e.message }.to_json
-            end
 
             # POST api/v1/flocks/[ID]/birds/[ID]
             routing.post do
@@ -54,11 +46,17 @@ module Flocks
           # GET api/v1/flocks/[ID]/birds
           routing.get do
             # SQL injection prevention
-            output = { data: Flock.first(id: flock_id).birds }
-            JSON.pretty_generate(output)
+            birds = Flock.first(id: flock_id).birds
+            
+            if birds 
+              response.status = 200
+              { data: birds }.to_json
+            end
+            #JSON.pretty_generate(output)
           rescue ArgumentError
             routing.halt 404, { message: 'Invalid ID format' }.to_json
-          rescue StandardError
+          rescue StandardError => e
+            puts(e)
             routing.halt 404, { message: 'Could not find birds' }.to_json
           end
 
@@ -100,32 +98,20 @@ module Flocks
 
       # GET api/v1/flocks
       routing.get do
-        username = @auth_account['username']
-        account = Flocks::Account.first(username: username)
-        raise 'Account not found' unless account
-
-        created_flocks = account.created_flocks
-        joined_flocks = Flocks::Bird
-                        .where(account_id: account.id)
-                        .map(&:flock)
-                        .reject { |flock| flock.creator.id == account.id }
-
-        all_flocks = created_flocks + joined_flocks
+        all_flocks = FlockPolicy::AccountScope.new(@auth_account).viewable
         output = { data: all_flocks }
         JSON.pretty_generate(output)
       rescue StandardError => e
         puts "[ERROR] #{e.class}: #{e.message}"
-        routing.halt 404, { message: e.message }.to_json
+        routing.halt 403, { message: 'Could not find any flocks' }.to_json
       end
 
       # POST api/v1/flocks
       routing.post do
         new_data = Flocks::Helper.deep_symbolize(JSON.parse(routing.body.read))
-        username = @auth_account['username']
-
-        new_flock = Flocks::CreateFlock.call(username: username, flock_data: new_data)
-        # add bird
-
+        new_flock = @auth_account.add_created_flock(new_data)
+        AddBirdToFlock.call(flock_id: new_flock.id, bird_data: { account_id: @auth_account.id })
+        
         response.status = 201
         response['Location'] = "#{@flock_route}/#{new_flock.id}"
         { message: 'Flock saved', data: new_flock }.to_json

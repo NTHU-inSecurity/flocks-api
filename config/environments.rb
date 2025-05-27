@@ -24,6 +24,8 @@ module Flocks
       # Make the environment variables accessible to other classes
       def self.config = Figaro.env
 
+      def self.API_HOST = config.API_HOST 
+
       # Connect and make the database accessible to other classes
       db_url = ENV.delete('DATABASE_URL')
 

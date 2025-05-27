@@ -6,7 +6,7 @@ module Flocks
   # Publishes birds' locations in the flock to Faye endpoint
   class LocationPublisher
     def initialize(channel_id)
-      @config = 'http://localhost:3000'
+      @config = Api.API_HOST()
       @channel_id = channel_id
     end
 
