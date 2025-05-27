@@ -32,6 +32,10 @@ module Flocks
                                              bird_id: bird_id,
                                              new_data: new_data)
 
+              birds_data = Flock.first(id: flock_id).birds
+              job = LocationPublisher.new(flock_id)
+              job.publish(birds_data)
+
               if updated_bird
                 response.status = 200
                 response['Location'] = "#{@bird_route}/#{updated_bird.id}"
@@ -102,9 +106,9 @@ module Flocks
 
         created_flocks = account.created_flocks
         joined_flocks = Flocks::Bird
-                          .where(account_id: account.id)
-                          .map(&:flock)
-                          .reject { |flock| flock.creator.id == account.id }
+                        .where(account_id: account.id)
+                        .map(&:flock)
+                        .reject { |flock| flock.creator.id == account.id }
 
         all_flocks = created_flocks + joined_flocks
         output = { data: all_flocks }
@@ -120,6 +124,7 @@ module Flocks
         username = @auth_account['username']
 
         new_flock = Flocks::CreateFlock.call(username: username, flock_data: new_data)
+        # add bird
 
         response.status = 201
         response['Location'] = "#{@flock_route}/#{new_flock.id}"
