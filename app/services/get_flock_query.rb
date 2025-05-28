@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
 module Flocks
-  # Service object to update flock's destination URL
-  class DeleteFlock
-    # Error for unauthorized action
+  # Get flock data
+  class GetFlockQuery
+    # Error for no permission
     class ForbiddenError < StandardError
       def message
-        'You are not allowed to delete that flock'
+        'You are not allowed to access that flock'
       end
     end
 
@@ -18,13 +18,13 @@ module Flocks
     end
 
     def self.call(account:, flock_id:)
-      flock = Flock.where(id: flock_id).first
+      flock = Flock.first(id: flock_id)
       raise NotFoundError unless flock
 
       policy = FlockPolicy.new(account, flock)
-      raise ForbiddenError unless policy.can_delete?
+      raise ForbiddenError unless policy.can_view?
 
-      flock.destroy
+      flock.full_details.merge(policies: policy.summary)
     end
   end
 end

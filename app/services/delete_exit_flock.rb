@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 module Flocks
-  # Add a collaborator to another owner's existing project
-  class ExitFlock
-    # Error for owner cannot be collaborator
+  # delete or exit flock
+  class DeleteExitFlock
+    # not permission error
     class ForbiddenError < StandardError
       def message
         'You are not allowed to exit the flock'
@@ -22,13 +22,16 @@ module Flocks
       raise NotFoundError unless flock
 
       policy = FlockPolicy.new(account, flock)
-      raise ForbiddenError unless policy.can_leave?
 
-      bird = Bird.where(account_id: account.id, flock_id: flock.id)
-      flock.remove_bird(bird)
-      bird
-    rescue StandardError
-      raise 'Something went wrong when exiting the flock QQ'
+      if policy.can_leave?
+        bird = Bird.where(account_id: account.id, flock_id: flock.id)
+        flock.remove_bird(bird)
+        return bird
+      elsif policy.can_delete?
+        return flock.destroy
+      else  
+        raise ForbiddenError
+      end
     end
 
   end

@@ -20,6 +20,26 @@ module Flocks
     plugin :whitelist_security
     set_allowed_columns :destination_url
 
+
+    def to_h
+      {
+        type: 'flock',
+        attributes: {
+          id:,
+          destination_url:
+        }
+      }
+    end
+
+    def full_details
+      to_h.merge(
+        relationships: {
+          creator:,
+          birds:
+        }
+      )
+    end
+
     def to_json(options = {})
       JSON(
         {

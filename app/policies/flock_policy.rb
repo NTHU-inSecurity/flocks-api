@@ -1,9 +1,13 @@
 
 module Flocks
     class FlockPolicy
-        def innitialize(account, flock)
+        def initialize(account, flock)
             @account = account
             @flock = flock
+        end
+
+        def can_view?
+            account_is_creator? || account_is_visitor?
         end
 
         def can_change_destination_url?
@@ -20,6 +24,7 @@ module Flocks
 
         def summary
             {
+                can_view: can_view?,
                 can_change_destination_url: can_change_destination_url?,
                 can_leave: can_leave?,
                 can_delete: can_delete?
@@ -33,7 +38,7 @@ module Flocks
         end
 
         def account_is_visitor?
-            @account.id != @flock.creator_id
+            @flock.birds.any? { |bird| bird.account_id == @account.id } && @account.id != @flock.creator_id
         end
 
     end
