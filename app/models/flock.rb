@@ -20,7 +20,6 @@ module Flocks
     plugin :whitelist_security
     set_allowed_columns :destination_url
 
-
     def to_h
       {
         type: 'flock',

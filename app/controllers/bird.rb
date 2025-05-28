@@ -1,17 +1,15 @@
 # frozen_string_literal: true
 
-require_relative './app'
+require_relative 'app'
 
 module Flocks
   # Web controller for Credence API
   class Api < Roda
     route('bird') do |routing|
-
       @bird_route = "#{@api_root}/bird"
 
       # POST api/v1/bird/[flock_id]
       routing.on String do |flock_id|
-
         # either exit or delete flock
         routing.post do
           data = DeleteExitFlock(account: @auth_account, flock_id: flock_id)

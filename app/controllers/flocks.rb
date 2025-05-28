@@ -8,29 +8,27 @@ module Flocks
   class Api < Roda
     # rubocop:disable Metrics/BlockLength
     route('flocks') do |routing|
-
       @flock_route = "#{@api_root}/flocks"
 
       routing.on String do |flock_id|
         routing.on 'birds' do
           @birds_route = "#{@api_root}/flocks/#{flock_id}/birds"
           routing.on String do |bird_id|
-
             # POST api/v1/flocks/[ID]/birds/[ID]
             routing.post do
               new_data = JSON.parse(routing.body.read)
 
-              updated_bird = UpdateBird.call(account: @auth_account, 
-                                             flock_id: flock_id, 
+              updated_bird = UpdateBird.call(account: @auth_account,
+                                             flock_id: flock_id,
                                              bird_id: bird_id,
                                              new_data: new_data)
 
-              #updated_bird = UpdateBird.call(flock_id: flock_id,
+              # updated_bird = UpdateBird.call(flock_id: flock_id,
               #                               bird_id: bird_id,
               #                               new_data: new_data)
 
               birds_data = GetBirdsQuery.call(requestor: @auth_account, flock_id: flock_id)
-              #birds_data = Flock.first(id: flock_id).birds
+              # birds_data = Flock.first(id: flock_id).birds
               job = LocationPublisher.new(flock_id)
               job.publish(birds_data)
 
@@ -52,12 +50,12 @@ module Flocks
           # GET api/v1/flocks/[ID]/birds
           routing.get do
             birds = GetBirdsQuery.call(requestor: @auth_account, flock_id: flock_id)
-            
-            if birds 
+
+            if birds
               response.status = 200
               { data: birds }.to_json
             end
-            #JSON.pretty_generate(output)
+            # JSON.pretty_generate(output)
           rescue GetBirdsQuery::ForbiddenError => e
             routing.halt 403, { message: e.message }.to_json
           rescue GetBirdsQuery::NotFoundError => e
@@ -69,8 +67,8 @@ module Flocks
 
           # POST api/v1/flocks/[ID]/birds
           routing.post do
-            new_bird = AddBirdToFlock.call(flock_id: flock_id, bird_data: {account_id: @auth_account.id})
-            
+            AddBirdToFlock.call(flock_id: flock_id, bird_data: { account_id: @auth_account.id })
+
             flock = GetFlockQuery.call(
               account: @auth_account,
               flock_id: flock_id
@@ -106,7 +104,7 @@ module Flocks
         # POST api/v1/flocks/[ID]
         routing.post do
           new_data = JSON.parse(routing.body.read)
-          updated_flock = UpdateDestination().call(account: @auth_account, 
+          updated_flock = UpdateDestination().call(account: @auth_account,
                                                    flock_id: flock_id,
                                                    new_data: new_data['destination_url'])
           if updated_flock
@@ -139,7 +137,7 @@ module Flocks
         new_data = HttpRequest.new(routing).body_data
         new_flock = @auth_account.add_created_flock(new_data)
         AddBirdToFlock.call(flock_id: new_flock.id, bird_data: { account_id: @auth_account.id })
-        
+
         response.status = 201
         response['Location'] = "#{@flock_route}/#{new_flock.id}"
         { message: 'Flock saved', data: new_flock }.to_json

@@ -26,13 +26,12 @@ module Flocks
       if policy.can_leave?
         bird = Bird.where(account_id: account.id, flock_id: flock.id)
         flock.remove_bird(bird)
-        return bird
+        bird
       elsif policy.can_delete?
-        return flock.destroy
-      else  
+        flock.destroy
+      else
         raise ForbiddenError
       end
     end
-
   end
 end

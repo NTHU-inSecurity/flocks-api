@@ -3,7 +3,6 @@
 module Flocks
   # Service object to update bird's message and location in a flock
   class UpdateBird
-
     class ForbiddenError < StandardError
       def message
         'You are not allowed to modify bird data'
@@ -16,7 +15,6 @@ module Flocks
     end
 
     def self.call(account:, flock_id:, bird_id:, new_data:)
-
       flock = Flock.where(id: flock_id).first
       raise NotFoundError unless flock
 
