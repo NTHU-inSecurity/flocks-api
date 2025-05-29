@@ -24,8 +24,9 @@ module Flocks
       policy = FlockPolicy.new(account, flock)
 
       if policy.can_leave?
-        bird = Bird.where(account_id: account.id, flock_id: flock.id)
-        flock.remove_bird(bird)
+        bird = Bird.where(account_id: account.id, flock_id: flock.id).first
+        # flock.remove_bird(bird) # doing this bird.flock_id will be NULL
+        bird.delete
         bird
       elsif policy.can_delete?
         flock.destroy
