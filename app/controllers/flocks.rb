@@ -104,9 +104,9 @@ module Flocks
         # POST api/v1/flocks/[ID]
         routing.post do
           new_data = JSON.parse(routing.body.read)
-          updated_flock = UpdateDestination().call(account: @auth_account,
+          updated_flock = UpdateDestination.call(account: @auth_account,
                                                    flock_id: flock_id,
-                                                   new_data: new_data['destination_url'])
+                                                   new_destination: new_data['destination_url'])
           if updated_flock
             response.status = 200
             response['Location'] = "#{@flock_route}/#{flock_id}"
