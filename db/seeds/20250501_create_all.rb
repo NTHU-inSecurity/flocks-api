@@ -9,7 +9,6 @@ Sequel.seed(:development) do
 end
 
 require 'yaml'
-require_relative '../../app/services/create_flock'
 
 DIR = File.dirname(__FILE__)
 ACCOUNTS_INFO = YAML.load_file("#{DIR}/account_seeds.yml")
@@ -27,6 +26,5 @@ end
 def create_flocks
   ACCOUNTS_INFO.zip(FLOCK_INFO).each do |account_data, flock_data|
     username = account_data['username']
-    Flocks::CreateFlock.call(username: username, flock_data: flock_data)
   end
 end

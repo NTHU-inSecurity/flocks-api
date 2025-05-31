@@ -23,7 +23,8 @@ module Flocks
     end
 
     def latitude
-      Float(SecureDB.decrypt(latitude_secure))
+      lat = SecureDB.decrypt(latitude_secure)
+      lat.nil? ? nil : Float(lat)
     end
 
     def latitude=(plaintext)
@@ -31,7 +32,8 @@ module Flocks
     end
 
     def longitude
-      Float(SecureDB.decrypt(longitude_secure))
+      lon = SecureDB.decrypt(longitude_secure)
+      lon.nil? ? nil : Float(lon)
     end
 
     def longitude=(plaintext)

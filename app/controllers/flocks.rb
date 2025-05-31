@@ -12,33 +12,29 @@ module Flocks
 
       routing.on String do |flock_id|
         routing.on 'birds' do
-          @bird_route = "#{@api_root}/flocks/#{flock_id}/birds"
-
+          @birds_route = "#{@api_root}/flocks/#{flock_id}/birds"
           routing.on String do |bird_id|
-            # GET api/v1/flocks/[ID]/birds/[ID]
-            routing.get do
-              # SQL injection prevention
-              bird = Bird.where(flock_id: flock_id, id: bird_id).first
-              bird ? bird.to_json : raise('Bird not found')
-            rescue StandardError => e
-              routing.halt 404, { message: e.message }.to_json
-            end
-
             # POST api/v1/flocks/[ID]/birds/[ID]
             routing.post do
               new_data = JSON.parse(routing.body.read)
 
-              updated_bird = UpdateBird.call(flock_id: flock_id,
+              updated_bird = UpdateBird.call(account: @auth_account,
+                                             flock_id: flock_id,
                                              bird_id: bird_id,
                                              new_data: new_data)
 
-              birds_data = Flock.first(id: flock_id).birds
+              # updated_bird = UpdateBird.call(flock_id: flock_id,
+              #                               bird_id: bird_id,
+              #                               new_data: new_data)
+
+              birds_data = GetBirdsQuery.call(requestor: @auth_account, flock_id: flock_id)
+              # birds_data = Flock.first(id: flock_id).birds
               job = LocationPublisher.new(flock_id)
               job.publish(birds_data)
 
               if updated_bird
                 response.status = 200
-                response['Location'] = "#{@bird_route}/#{updated_bird.id}"
+                response['Location'] = "#{@birds_route}/#{updated_bird.id}"
                 { message: 'Bird data updated', data: updated_bird }.to_json
               else
                 routing.halt 400, 'Could not update bird data'
@@ -53,36 +49,44 @@ module Flocks
 
           # GET api/v1/flocks/[ID]/birds
           routing.get do
-            # SQL injection prevention
-            output = { data: Flock.first(id: flock_id).birds }
-            JSON.pretty_generate(output)
-          rescue ArgumentError
-            routing.halt 404, { message: 'Invalid ID format' }.to_json
-          rescue StandardError
+            birds = GetBirdsQuery.call(requestor: @auth_account, flock_id: flock_id)
+
+            if birds
+              response.status = 200
+              { data: birds }.to_json
+            end
+            # JSON.pretty_generate(output)
+          rescue GetBirdsQuery::ForbiddenError => e
+            routing.halt 403, { message: e.message }.to_json
+          rescue GetBirdsQuery::NotFoundError => e
+            routing.halt 404, { message: e.message }.to_json
+          rescue StandardError => e
+            puts(e.full_message)
             routing.halt 404, { message: 'Could not find birds' }.to_json
           end
 
           # POST api/v1/flocks/[ID]/birds
           routing.post do
-            new_data = Flocks::Helper.deep_symbolize(JSON.parse(routing.body.read))
-            acc = Account.first(username: new_data[:account][:attributes][:username])
-            new_data[:account_id] = acc.id
-            new_data.delete(:account)
+            AddBirdToFlock.call(flock_id: flock_id, bird_data: { account_id: @auth_account.id })
 
-            new_bird = AddBirdToFlock.call(flock_id: flock_id, bird_data: new_data)
+            flock = GetFlockQuery.call(
+              account: @auth_account,
+              flock_id: flock_id
+            )
 
-            if new_bird
-              response.status = 201
-              response['Location'] = "#{@bird_route}/#{new_bird.id}"
-              { message: 'New bird added', data: new_bird }.to_json
-            else
-              routing.halt 400, 'Could not add bird'
-            end
+            response.status = 201
+            response['Location'] = "#{@flock_route}/#{flock_id}"
+            { data: flock }.to_json
+          rescue GetFlockQuery::ForbiddenError => e
+            routing.halt 403, { message: e.message }.to_json
+          rescue AddBirdToFlock::NotFoundError => e
+            routing.halt 404, { message: e.message }.to_json
           rescue Sequel::MassAssignmentRestriction
             Api.logger.warn "Mass-assignment : #{new_data.keys}"
             routing.halt 400, { message: 'Illegal Attributes' }.to_json
-          rescue StandardError
-            routing.halt 500, { message: 'Database error: ' }.to_json
+          rescue StandardError => e
+            puts "FIND FLOCK ERROR: #{e.full_message}"
+            routing.halt 500, { message: 'API server error' }.to_json
           end
         end
 
@@ -96,35 +100,43 @@ module Flocks
         rescue StandardError => e
           routing.halt 404, { message: e.message }.to_json
         end
+
+        # POST api/v1/flocks/[ID]
+        routing.post do
+          new_data = JSON.parse(routing.body.read)
+          updated_flock = UpdateDestination.call(account: @auth_account,
+                                                   flock_id: flock_id,
+                                                   new_destination: new_data['destination_url'])
+          if updated_flock
+            response.status = 200
+            response['Location'] = "#{@flock_route}/#{flock_id}"
+            { message: 'Flock destination updated', data: updated_flock }.to_json
+          end
+        rescue UpdateDestination::ForbiddenError => e
+          routing.halt 403, { message: e.message }.to_json
+        rescue UpdateDestination::NotFoundError => e
+          routing.halt 404, { message: e.message }.to_json
+        rescue StandardError => e
+          Api.logger.warn "FLOCK UPDATING ERROR: #{e.message}"
+          routing.halt 500, { message: 'Error updating flock' }.to_json
+        end
       end
 
       # GET api/v1/flocks
       routing.get do
-        username = @auth_account['username']
-        account = Flocks::Account.first(username: username)
-        raise 'Account not found' unless account
-
-        created_flocks = account.created_flocks
-        joined_flocks = Flocks::Bird
-                        .where(account_id: account.id)
-                        .map(&:flock)
-                        .reject { |flock| flock.creator.id == account.id }
-
-        all_flocks = created_flocks + joined_flocks
+        all_flocks = FlockPolicy::AccountScope.new(@auth_account).viewable
         output = { data: all_flocks }
         JSON.pretty_generate(output)
       rescue StandardError => e
-        puts "[ERROR] #{e.class}: #{e.message}"
-        routing.halt 404, { message: e.message }.to_json
+        Api.logger.warn "FLOCK RETRIEVING ERROR: #{e.message}"
+        routing.halt 403, { message: 'Could not find any flocks' }.to_json
       end
 
       # POST api/v1/flocks
       routing.post do
-        new_data = Flocks::Helper.deep_symbolize(JSON.parse(routing.body.read))
-        username = @auth_account['username']
-
-        new_flock = Flocks::CreateFlock.call(username: username, flock_data: new_data)
-        # add bird
+        new_data = HttpRequest.new(routing).body_data
+        new_flock = @auth_account.add_created_flock(new_data)
+        AddBirdToFlock.call(flock_id: new_flock.id, bird_data: { account_id: @auth_account.id })
 
         response.status = 201
         response['Location'] = "#{@flock_route}/#{new_flock.id}"

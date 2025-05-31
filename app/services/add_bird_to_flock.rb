@@ -2,12 +2,18 @@
 
 module Flocks
   class AddBirdToFlock
-    def self.call(flock_id:, bird_data:)
-      bird_data[:flock_id] = flock_id
-      bird = Flocks::Bird.new(bird_data)
-      raise 'Could not save bird' unless bird.save
+    # Error for cannot find a flock
+    class NotFoundError < StandardError
+      def message
+        'We could not find that flock'
+      end
+    end
 
-      bird
+    def self.call(flock_id:, bird_data:)
+      flock = Flock.first(id: flock_id)
+      raise NotFoundError unless flock
+
+      flock.add_bird(bird_data)
     end
   end
 end
