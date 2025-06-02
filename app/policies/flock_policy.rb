@@ -2,17 +2,18 @@
 
 module Flocks
   class FlockPolicy
-    def initialize(account, flock)
+    def initialize(account, flock, auth_scope = nil)
       @account = account
       @flock = flock
+      @auth_scope = auth_scope
     end
 
     def can_view?
-      account_is_creator? || account_is_visitor?
+      can_read? && (account_is_creator? || account_is_visitor?)
     end
 
     def can_change_destination_url?
-      account_is_creator?
+      can_write? && (account_is_creator?)
     end
 
     def can_leave?
@@ -33,6 +34,13 @@ module Flocks
     end
 
     private
+    def can_read?
+      @auth_scope ? @auth_scope.can_read?('flocks') : false
+    end
+
+    def can_write?
+      @auth_scope ? @auth_scope.can_write?('flocks') : false
+    end
 
     def account_is_creator?
       @account.id == @flock.creator_id
