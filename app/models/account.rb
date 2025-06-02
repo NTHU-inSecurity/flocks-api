@@ -24,6 +24,11 @@ module Flocks
     plugin :whitelist_security
     set_allowed_columns :password, :email, :username
 
+    def self.create_google_account(google_account)
+      create(username: google_account[:username],
+             email: google_account[:email])
+    end
+
     # Password handling
     def password=(new_password)
       self.password_digest = Password.digest(new_password)
