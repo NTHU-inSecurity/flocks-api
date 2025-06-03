@@ -3,7 +3,7 @@
 require_relative 'app'
 
 module Flocks
-  # Web controller for Credence API
+  # Web controller for Flocks API
   class Api < Roda
     route('bird') do |routing|
       @bird_route = "#{@api_root}/bird"
@@ -12,7 +12,7 @@ module Flocks
       routing.on String do |flock_id|
         # either exit or delete flock
         routing.post do
-          data = DeleteExitFlock.call(account: @auth_account, flock_id: flock_id)
+          data = DeleteExitFlock.call(auth: @auth, flock_id: flock_id)
           { data: data }.to_json
         rescue DeleteExitFlock::ForbiddenError => e
           routing.halt 403, { message: e.message }.to_json

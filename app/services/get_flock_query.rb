@@ -17,11 +17,11 @@ module Flocks
       end
     end
 
-    def self.call(account:, flock_id:)
+    def self.call(auth:, flock_id:)
       flock = Flock.first(id: flock_id)
       raise NotFoundError unless flock
 
-      policy = FlockPolicy.new(account, flock)
+      policy = FlockPolicy.new(auth.account, flock, auth.scope)
       raise ForbiddenError unless policy.can_view?
 
       flock.full_details.merge(policies: policy.summary)

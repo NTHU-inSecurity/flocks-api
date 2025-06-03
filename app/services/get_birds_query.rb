@@ -22,7 +22,7 @@ module Flocks
       flock = Flock.first(id: flock_id)
       raise NotFoundError unless flock
 
-      policy = FlockPolicy.new(requestor, flock)
+      policy = FlockPolicy.new(requestor.account, flock, requestor.scope)
       raise ForbiddenError unless policy.can_view?
 
       flock.birds

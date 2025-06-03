@@ -17,14 +17,14 @@ module Flocks
       end
     end
 
-    def self.call(account:, flock_id:)
+    def self.call(auth:, flock_id:)
       flock = Flock.where(id: flock_id).first
       raise NotFoundError unless flock
 
-      policy = FlockPolicy.new(account, flock)
+      policy = FlockPolicy.new(auth.account, flock, auth.scope)
 
       if policy.can_leave?
-        bird = Bird.where(account_id: account.id, flock_id: flock.id).first
+        bird = Bird.where(account_id: auth.account.id, flock_id: flock.id).first
         # flock.remove_bird(bird) # doing this bird.flock_id will be NULL
         bird.delete
         bird
