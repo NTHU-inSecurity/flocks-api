@@ -13,7 +13,7 @@ module Flocks
     end
 
     def can_change_destination_url?
-      can_write? && (account_is_creator?)
+      can_write? && account_is_creator?
     end
 
     def can_leave?
@@ -34,7 +34,7 @@ module Flocks
     end
 
     private
-    
+
     def can_read?
       @auth_scope ? @auth_scope.can_read?('flocks') : false
     end
