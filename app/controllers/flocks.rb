@@ -67,7 +67,13 @@ module Flocks
 
           # POST api/v1/flocks/[ID]/birds
           routing.post do
-            AddBirdToFlock.call(flock_id: flock_id, bird_data: { account_id: @auth_account.id })
+            new_data = JSON.parse(routing.body.read, symbolize_names: true)
+            AddBirdToFlock.call(
+              flock_id: flock_id,
+              bird_data: new_data.merge(account_id: @auth_account.id)
+            )
+
+            # AddBirdToFlock.call(flock_id: flock_id, bird_data: { account_id: @auth_account.id })
 
             flock = GetFlockQuery.call(
               auth: @auth,
