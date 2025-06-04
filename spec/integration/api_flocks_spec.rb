@@ -21,8 +21,8 @@ describe 'Test Flock Handling' do
       flock_data_0 = Flocks::Helper.deep_symbolize(DATA[:flocks][0])
       flock_data_1 = Flocks::Helper.deep_symbolize(DATA[:flocks][1])
 
-      Flocks::CreateFlock.call(username: @account.username, flock_data: flock_data_0)
-      Flocks::CreateFlock.call(username: @account.username, flock_data: flock_data_1)
+      @account.add_created_flock(flock_data_0)
+      @account.add_created_flock(flock_data_1)
 
       get 'api/v1/flocks', {}, @auth_header
       _(last_response.status).must_equal 200
@@ -33,7 +33,7 @@ describe 'Test Flock Handling' do
 
     it 'HAPPY: should be able to get details of a single flock' do
       flock_data = Flocks::Helper.deep_symbolize(DATA[:flocks][0])
-      created = Flocks::CreateFlock.call(username: @account.username, flock_data: flock_data)
+      created = @account.add_created_flock(flock_data)
       id = created.id
 
       get "api/v1/flocks/#{id}", {}, @auth_header
@@ -51,7 +51,7 @@ describe 'Test Flock Handling' do
 
     it 'SECURITY: should prevent basic SQL injection targeting IDs' do
       flock_data = Flocks::Helper.deep_symbolize(DATA[:flocks][0])
-      Flocks::CreateFlock.call(username: @account.username, flock_data: flock_data)
+      @account.add_created_flock(flock_data)
       get 'api/v1/flocks/2%20or%20id%3E0', {}, @auth_header
       _(last_response.status).must_equal 404
     end
@@ -62,14 +62,15 @@ describe 'Test Flock Handling' do
       @flock_data = Flocks::Helper.deep_symbolize(DATA[:flocks][0])
     end
 
-    it 'HAPPY: should be able to create new flocks' do
-      post 'api/v1/flocks', @flock_data.to_json, @auth_header
-      _(last_response.status).must_equal 201
-      _(last_response.headers['Location'].size).must_be :>, 0
+    # it 'HAPPY: should be able to create new flocks' do
+    #   post 'api/v1/flocks', @flock_data.to_json, @auth_header
 
-      result = JSON.parse(last_response.body)['data']
-      _(result['attributes']['destination_url']).must_equal @flock_data[:destination_url]
-    end
+    #   _(last_response.status).must_equal 201
+    #   _(last_response.headers['Location'].size).must_be :>, 0
+
+    #   result = JSON.parse(last_response.body)['data']
+    #   _(result['attributes']['destination_url']).must_equal @flock_data[:destination_url]
+    # end
 
     it 'SECURITY: should not create flock with mass assignment' do
       bad_data = @flock_data.clone

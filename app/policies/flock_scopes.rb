@@ -8,8 +8,7 @@ module Flocks
       end
 
       def viewable
-        # created flocks are included
-        @current_account.joined_flocks
+        (@current_account.created_flocks + @current_account.joined_flocks)
       end
     end
   end
