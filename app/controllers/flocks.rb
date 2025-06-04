@@ -23,12 +23,7 @@ module Flocks
                                              bird_id: bird_id,
                                              new_data: new_data)
 
-              # updated_bird = UpdateBird.call(flock_id: flock_id,
-              #                               bird_id: bird_id,
-              #                               new_data: new_data)
-
-              birds_data = GetBirdsQuery.call(requestor: @auth, flock_id: flock_id)
-              # birds_data = Flock.first(id: flock_id).birds
+              birds_data = GetBirdsQuery.call(requestor: @auth_account, flock_id: flock_id)
               job = LocationPublisher.new(flock_id)
               job.publish(birds_data)
 
@@ -104,9 +99,9 @@ module Flocks
         # POST api/v1/flocks/[ID]
         routing.post do
           new_data = JSON.parse(routing.body.read)
-          updated_flock = UpdateDestination.call(auth: @auth,
-                                                   flock_id: flock_id,
-                                                   new_destination: new_data['destination_url'])
+          updated_flock = UpdateDestination.call(account: @auth_account,
+                                                 flock_id: flock_id,
+                                                 new_destination: new_data['destination_url'])
           if updated_flock
             response.status = 200
             response['Location'] = "#{@flock_route}/#{flock_id}"
