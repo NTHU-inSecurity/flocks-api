@@ -14,11 +14,11 @@ module Flocks
       def message = 'Flock/bird not found'
     end
 
-    def self.call(account:, flock_id:, bird_id:, new_data:)
+    def self.call(requestor:, flock_id:, bird_id:, new_data:)
       flock = Flock.where(id: flock_id).first
       raise NotFoundError unless flock
 
-      policy = FlockPolicy.new(account, flock)
+      policy = FlockPolicy.new(requestor.account, flock, requestor.scope)
       raise ForbiddenError unless policy.can_view?
 
       bird = Bird.where(flock_id:, id: bird_id).first
