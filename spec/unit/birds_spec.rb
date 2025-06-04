@@ -11,7 +11,7 @@ describe 'Test Bird Handling' do
 
     # Create flock and include real bird data from seed
     @creator = Flocks::Account.first
-    @flock = Flocks::CreateFlock.call(username: @creator.username, flock_data: DATA[:flocks][0])
+    @flock = @creator.add_created_flock(DATA[:flocks][0])
     bird_data = DATA[:birds][0].transform_keys(&:to_sym).merge(account_id: @creator.id)
     Flocks::AddBirdToFlock.call(flock_id: @flock.id, bird_data: bird_data)
   end
