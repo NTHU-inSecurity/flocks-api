@@ -8,7 +8,7 @@ module Flocks
       end
 
       def viewable
-        (@current_account.created_flocks + @current_account.joined_flocks)
+        (@current_account.created_flocks + @current_account.joined_flocks).uniq
       end
     end
   end

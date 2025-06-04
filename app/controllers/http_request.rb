@@ -24,6 +24,12 @@ module Flocks
       AuthorizedAccount.new(account, token.scope)
     end
 
+    def self.empty_body?(routing)
+      body = routing.body.read
+      routing.body.rewind
+      body.strip.empty?
+    end
+
     def body_data
       JSON.parse(@routing.body.read, symbolize_names: true)
     end

@@ -67,7 +67,7 @@ module Flocks
 
           # POST api/v1/flocks/[ID]/birds
           routing.post do
-            new_data = HttpRequest.new(routing).body_data
+            new_data = HttpRequest.empty_body?(routing) ? {} : HttpRequest.new(routing).body_data
 
             AddBirdToFlock.call(
               flock_id: flock_id,
