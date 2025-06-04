@@ -136,6 +136,10 @@ module Flocks
 
       # POST api/v1/flocks
       routing.post do
+        raw_body = routing.body.read
+        routing.body.rewind
+
+        Api.logger.info "[WEB] RAW REQUEST BODY: #{raw_body.inspect}"
         new_data = HttpRequest.new(routing).body_data
         new_flock = @auth_account.add_created_flock(new_data)
 

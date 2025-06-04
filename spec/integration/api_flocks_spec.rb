@@ -62,15 +62,15 @@ describe 'Test Flock Handling' do
       @flock_data = Flocks::Helper.deep_symbolize(DATA[:flocks][0])
     end
 
-    # it 'HAPPY: should be able to create new flocks' do
-    #   post 'api/v1/flocks', @flock_data.to_json, @auth_header
+    it 'HAPPY: should be able to create new flocks' do
+      post 'api/v1/flocks', @flock_data.to_json, @auth_header
 
-    #   _(last_response.status).must_equal 201
-    #   _(last_response.headers['Location'].size).must_be :>, 0
+      _(last_response.status).must_equal 201
+      _(last_response.headers['Location'].size).must_be :>, 0
 
-    #   result = JSON.parse(last_response.body)['data']
-    #   _(result['attributes']['destination_url']).must_equal @flock_data[:destination_url]
-    # end
+      result = JSON.parse(last_response.body)['data']
+      _(result['attributes']['destination_url']).must_equal @flock_data[:destination_url]
+    end
 
     it 'SECURITY: should not create flock with mass assignment' do
       bad_data = @flock_data.clone
