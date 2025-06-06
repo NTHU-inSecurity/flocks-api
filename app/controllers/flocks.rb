@@ -62,7 +62,12 @@ module Flocks
 
           # POST api/v1/flocks/[ID]/birds
           routing.post do
-            AddBirdToFlock.call(flock_id: flock_id, bird_data: { account_id: @auth_account.id })
+            new_data = HttpRequest.empty_body?(routing) ? {} : HttpRequest.new(routing).body_data
+
+            AddBirdToFlock.call(
+              flock_id: flock_id,
+              bird_data: new_data.merge(account_id: @auth_account.id)
+            )
 
             flock = GetFlockQuery.call(
               auth: @auth_account,
@@ -129,9 +134,17 @@ module Flocks
 
       # POST api/v1/flocks
       routing.post do
+        raw_body = routing.body.read
+        routing.body.rewind
+
+        Api.logger.info "[WEB] RAW REQUEST BODY: #{raw_body.inspect}"
         new_data = HttpRequest.new(routing).body_data
         new_flock = @auth_account.add_created_flock(new_data)
-        AddBirdToFlock.call(flock_id: new_flock.id, bird_data: { account_id: @auth_account.id })
+
+        AddBirdToFlock.call(
+          flock_id: new_flock.id,
+          bird_data: {account_id: @auth_account.id}
+        )
 
         response.status = 201
         response['Location'] = "#{@flock_route}/#{new_flock.id}"

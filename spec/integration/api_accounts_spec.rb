@@ -15,10 +15,23 @@ describe 'Test Account Handling' do
       account_data = DATA[:accounts][1]
       account = Flocks::Account.create(account_data)
 
-      get "/api/v1/accounts/#{account.username}"
+      # Authenticate
+      credentials = {
+        username: account_data['username'],
+        password: account_data['password']
+      }
+      post 'api/v1/auth/authenticate', credentials.to_json, @req_header
+
+      response = JSON.parse(last_response.body)
+      auth_token = response.dig('data', 'attributes', 'auth_token')
+
+      # Correct header key for Rack
+      auth_header = @req_header.merge('HTTP_AUTHORIZATION' => "Bearer #{auth_token}")
+      get "/api/v1/accounts/#{account.username}", nil, auth_header
+
       _(last_response.status).must_equal 200
 
-      attributes = JSON.parse(last_response.body)['attributes']
+      attributes = JSON.parse(last_response.body).dig('data', 'attributes', 'account', 'attributes')
       _(attributes['username']).must_equal account.username
       _(attributes['salt']).must_be_nil
       _(attributes['password']).must_be_nil

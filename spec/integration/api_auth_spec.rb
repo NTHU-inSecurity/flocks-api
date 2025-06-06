@@ -28,8 +28,8 @@ describe 'Test Authentication Routes' do
       response = JSON.parse(last_response.body)
       # puts "DEBUG: #{response.inspect}"
 
-      account_info = response['attributes']['account']['attributes']
-      auth_token   = response['attributes']['auth_token']
+      account_info = response['data']['attributes']['account']['attributes']
+      auth_token   = response['data']['attributes']['auth_token']
 
       _(account_info['username']).must_equal @account_data['username']
       _(auth_token).wont_be_nil
@@ -48,4 +48,4 @@ describe 'Test Authentication Routes' do
       _(result['message'].downcase).must_include('invalid')
     end
   end
-end
+end 
