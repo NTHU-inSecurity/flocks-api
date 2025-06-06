@@ -70,7 +70,7 @@ module Flocks
             )
 
             flock = GetFlockQuery.call(
-              auth: @auth_account,
+              auth: @auth,
               flock_id: flock_id
             )
 
@@ -104,7 +104,7 @@ module Flocks
         # POST api/v1/flocks/[ID]
         routing.post do
           new_data = JSON.parse(routing.body.read)
-          updated_flock = UpdateDestination.call(account: @auth,
+          updated_flock = UpdateDestination.call(auth: @auth,
                                                  flock_id: flock_id,
                                                  new_destination: new_data['destination_url'])
           if updated_flock

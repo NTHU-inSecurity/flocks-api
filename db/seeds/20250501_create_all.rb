@@ -24,7 +24,7 @@ def create_accounts
 end
 
 def create_flocks
-  ACCOUNTS_INFO.zip(FLOCK_INFO).each_key do |account_data|
-    account_data['username']
+  ACCOUNTS_INFO.zip(FLOCK_INFO).each do |account_data, flock_data|
+    username = account_data['username']
   end
 end
