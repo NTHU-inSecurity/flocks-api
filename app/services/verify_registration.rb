@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'http'
-require 'brevo'
 
 module Flocks
   ## Send email verfification email

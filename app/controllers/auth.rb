@@ -22,6 +22,7 @@ module Flocks
           Api.logger.error "Could not send registration email: #{e.inspect}"
           routing.halt 500, { message: 'Error sending email' }.to_json
         rescue StandardError => e
+          puts(e.message)
           Api.logger.error "Could not verify registration: #{e.inspect}"
           routing.halt 500
         end
