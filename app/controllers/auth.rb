@@ -7,6 +7,13 @@ module Flocks
   # Web controller for Flocks API
   class Api < Roda
     route('auth') do |routing|
+      # All requests in this route require signed requests
+      begin
+        @request_data = HttpRequest.new(routing).signed_body_data
+      rescue SignedRequest::VerificationError
+        routing.halt '403', { message: 'Must sign request' }.to_json
+      end
+      
       routing.on 'register' do
         # POST api/v1/auth/register
         routing.post do
