@@ -4,6 +4,7 @@ require 'roda'
 require 'figaro'
 require 'sequel'
 require 'logger'
+require_app('lib')
 
 require_relative '../app/lib/secure_db'
 require_relative '../app/lib/auth_token'
@@ -35,6 +36,7 @@ module Flocks
       # Load crypto keys
       SecureDB.setup(ENV.delete('DB_KEY'))
       AuthToken.setup(ENV.fetch('MSG_KEY')) # Load crypto key
+      SignedRequest.setup(ENV.delete('VERIFY_KEY'), ENV.delete('SIGNING_KEY'))
 
       # Custom events logging
       LOGGER = Logger.new($stderr)
