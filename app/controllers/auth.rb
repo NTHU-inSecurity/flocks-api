@@ -13,13 +13,13 @@ module Flocks
       rescue SignedRequest::VerificationError
         routing.halt '403', { message: 'Must sign request' }.to_json
       end
-      
+
       routing.on 'register' do
         # POST api/v1/auth/register
         routing.post do
-          reg_data = JSON.parse(request.body.read, symbolize_names: true)
+          # reg_data = JSON.parse(request.body.read, symbolize_names: true)
 
-          VerifyRegistration.new(reg_data).call
+          VerifyRegistration.new(@request_data).call
 
           response.status = 202
           { message: 'Verification email sent' }.to_json
@@ -37,8 +37,8 @@ module Flocks
       routing.is 'authenticate' do
         # POST /api/v1/auth/authenticate
         routing.post do
-          credentials = HttpRequest.new(routing).body_data
-          auth_account = AuthenticateAccount.call(credentials)
+          # credentials = HttpRequest.new(routing).body_data
+          auth_account = AuthenticateAccount.call(@request_data)
           { data: auth_account }.to_json
         rescue AuthenticateAccount::UnauthorizedError
           routing.halt '403', { message: 'Invalid credentials' }.to_json
@@ -47,8 +47,8 @@ module Flocks
 
       # POST /api/v1/auth/sso
       routing.post 'sso' do
-        auth_request = HttpRequest.new(routing).body_data
-        auth_account = AuthenticateSso.new.call(auth_request[:access_token])
+        # auth_request = HttpRequest.new(routing).body_data
+        auth_account = AuthenticateSso.new.call(@request_data[:access_token])
         { data: auth_account }.to_json
       rescue StandardError => e
         Api.logger.warn "FAILED to validate Google account: #{e.inspect}" \

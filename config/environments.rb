@@ -26,6 +26,7 @@ module Flocks
       def self.config = Figaro.env
 
       def self.API_HOST = config.API_HOST
+      def self.GEO_KEY = config.GOOGLE_GEO_KEY
 
       # Connect and make the database accessible to other classes
       db_url = ENV.delete('DATABASE_URL')

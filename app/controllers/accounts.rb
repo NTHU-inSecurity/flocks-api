@@ -28,8 +28,8 @@ module Flocks
 
       # POST api/v1/accounts
       routing.post do
-        new_data = HttpRequest.new(routing).body_data
-        new_account = Account.new(new_data)
+        account_data = HttpRequest.new(routing).signed_body_data
+        new_account = Account.create(account_data)
 
         raise('Could not save account') unless new_account.save
 

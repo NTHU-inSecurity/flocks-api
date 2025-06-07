@@ -10,10 +10,11 @@ module Flocks
       end
     end
 
-    URL = 'https://places.googleapis.com/v1/places/'
+    URL = 'https://maps.googleapis.com/maps/api/geocode/json'
 
     def initialize(link)
       @link = link
+      @key = Api.GEO_KEY
     end
 
     def call
@@ -27,12 +28,26 @@ module Flocks
     private
 
     def process_response(data)
-      raise GoogleApiError unless data =~ /@(-?\d+\.\d+),(-?\d+\.\d+)/
+      address = data[%r{(?<=place/)[^/]+(?=/@)}]
+      raise GoogleApiError unless data
 
-      lat = ::Regexp.last_match(1)
-      lng = ::Regexp.last_match(2)
+      response = HTTP.get(URL, params: { address: address, key: @key })
 
-      { latitude: lat.to_f, longitude: lng.to_f }
+      raise GoogleApiError unless response.status.success?
+
+      results = JSON.parse(response)['results']
+
+      if results.empty?
+        data =~ /@(-?\d+\.\d+),(-?\d+\.\d+)/
+        lat = ::Regexp.last_match(1)
+        lng = ::Regexp.last_match(2)
+        return { latitude: lat.to_f, longitude: lng.to_f }
+      else
+        loc = results[0]['geometry']['location']
+        raise GoogleApiError unless loc
+      end
+
+      { latitude: loc['lat'].to_f, longitude: loc['lng'].to_f }
     end
   end
 end
