@@ -18,14 +18,16 @@ module Flocks
     plugin :timestamps
     plugin :uuid, field: :id
     plugin :whitelist_security
-    set_allowed_columns :destination_url
+    set_allowed_columns :destination_url, :latitude, :longitude
 
     def to_h
       {
         type: 'flock',
         attributes: {
           id:,
-          destination_url:
+          destination_url:,
+          latitude:,
+          longitude:
         }
       }
     end
@@ -45,7 +47,9 @@ module Flocks
           type: 'flock',
           attributes: {
             id:,
-            destination_url:
+            destination_url:,
+            latitude:,
+            longitude:
           }
         }, options
       )

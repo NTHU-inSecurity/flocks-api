@@ -2,8 +2,6 @@
 
 require 'roda'
 require 'json'
-require 'logger'
-require_relative '../helpers/symbolize_helper'
 
 require_relative 'http_request'
 

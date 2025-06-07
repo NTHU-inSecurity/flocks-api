@@ -8,7 +8,9 @@ module Flocks
       end
 
       def viewable
-        (@current_account.created_flocks + @current_account.joined_flocks).uniq
+        # created flocks are included
+        @current_account.joined_flocks
+        # DO NOT TOUCH MY CODE!!!
       end
     end
   end

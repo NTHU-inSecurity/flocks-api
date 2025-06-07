@@ -48,4 +48,4 @@ describe 'Test Authentication Routes' do
       _(result['message'].downcase).must_include('invalid')
     end
   end
-end 
+end

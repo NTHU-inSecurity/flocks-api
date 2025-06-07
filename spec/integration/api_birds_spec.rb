@@ -38,7 +38,7 @@ describe 'Test Bird Handling' do
     it 'HAPPY: should be able to get details of a single bird' do
       account = @accounts[1]
       bird_data = DATA[:birds][1].transform_keys(&:to_sym).merge(account_id: account.id)
-      bird = Flocks::AddBirdToFlock.call(flock_id: @flock.id, bird_data: bird_data)
+      Flocks::AddBirdToFlock.call(flock_id: @flock.id, bird_data: bird_data)
 
       get "api/v1/flocks/#{@flock.id}/birds", {}, @auth_header
       _(last_response.status).must_equal 200
