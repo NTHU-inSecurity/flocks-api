@@ -9,6 +9,8 @@ Sequel.migration do
       foreign_key :creator_id, :accounts, type: :uuid
 
       String :destination_url
+      Float :latitude
+      Float :longitude
 
       DateTime :created_at
       DateTime :updated_at

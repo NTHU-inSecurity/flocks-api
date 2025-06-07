@@ -6,7 +6,6 @@ require_relative 'app'
 module Flocks
   # web controller for Flocks api
   class Api < Roda
-    # rubocop:disable Metrics/BlockLength
     route('flocks') do |routing|
       @flock_route = "#{@api_root}/flocks"
 
@@ -24,8 +23,8 @@ module Flocks
                                              new_data: new_data)
 
               birds_data = GetBirdsQuery.call(requestor: @auth, flock_id: flock_id)
-              job = LocationPublisher.new(flock_id)
-              job.publish(birds_data)
+              task = LocationPublisher.new(flock_id)
+              task.publish(birds_data)
 
               if updated_bird
                 response.status = 200
@@ -62,11 +61,9 @@ module Flocks
 
           # POST api/v1/flocks/[ID]/birds
           routing.post do
-            new_data = HttpRequest.empty_body?(routing) ? {} : HttpRequest.new(routing).body_data
-
             AddBirdToFlock.call(
               flock_id: flock_id,
-              bird_data: new_data.merge(account_id: @auth_account.id)
+              bird_data: { account_id: @auth_account.id }
             )
 
             flock = GetFlockQuery.call(
@@ -92,7 +89,6 @@ module Flocks
 
         # GET api/v1/flocks/[ID]
         routing.get do
-          # SQL injection prevention
           flock = Flock.first(id: flock_id)
           flock ? flock.to_json : raise('Flock not found')
         rescue ArgumentError
@@ -134,21 +130,24 @@ module Flocks
 
       # POST api/v1/flocks
       routing.post do
-        raw_body = routing.body.read
-        routing.body.rewind
-
-        Api.logger.info "[WEB] RAW REQUEST BODY: #{raw_body.inspect}"
         new_data = HttpRequest.new(routing).body_data
-        new_flock = @auth_account.add_created_flock(new_data)
+
+        location = RequestLatLonFromGoogle.new(new_data[:destination_url]).call
+        new_flock = @auth_account.add_created_flock(new_data.merge({ latitude: location[:latitude],
+                                                                     longitude: location[:longitude] }))
 
         AddBirdToFlock.call(
           flock_id: new_flock.id,
-          bird_data: {account_id: @auth_account.id}
+          bird_data: { account_id: @auth_account.id }
         )
 
         response.status = 201
         response['Location'] = "#{@flock_route}/#{new_flock.id}"
         { message: 'Flock saved', data: new_flock }.to_json
+      rescue RequestLatLonFromGoogle::GoogleApiError
+        Api.logger.error "GOOGLE API ERROR: #{e.message}"
+        routing.halt 400, { message: 'Could not process the link' }.to_json
+      rescue AddBirdToFlock::NotFoundError
       rescue Sequel::MassAssignmentRestriction
         Api.logger.warn "MASS-ASSIGNMENT: #{new_data.keys}"
         routing.halt 400, { message: 'Illegal Attributes' }.to_json
