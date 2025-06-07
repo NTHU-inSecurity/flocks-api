@@ -8,6 +8,10 @@ describe 'Test Account Handling' do
   before do
     @req_header = { 'CONTENT_TYPE' => 'application/json' }
     wipe_database
+
+    # Setup signing keys for specs
+    keypair = Flocks::SignedRequest.generate_keypair
+    Flocks::SignedRequest.setup(keypair[:verify_key], keypair[:signing_key])
   end
 
   describe 'Account information' do
@@ -20,12 +24,15 @@ describe 'Test Account Handling' do
         username: account_data['username'],
         password: account_data['password']
       }
-      post 'api/v1/auth/authenticate', credentials.to_json, @req_header
 
+      signed = Flocks::SignedRequest.sign(credentials)
+      post 'api/v1/auth/authenticate', signed.to_json, @req_header
+
+      _(last_response.status).must_equal 200
       response = JSON.parse(last_response.body)
       auth_token = response.dig('data', 'attributes', 'auth_token')
 
-      # Correct header key for Rack
+      # Get account details
       auth_header = @req_header.merge('HTTP_AUTHORIZATION' => "Bearer #{auth_token}")
       get "/api/v1/accounts/#{account.username}", nil, auth_header
 

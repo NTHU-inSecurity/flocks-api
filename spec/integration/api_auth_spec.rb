@@ -8,6 +8,10 @@ describe 'Test Authentication Routes' do
   before do
     @req_header = { 'CONTENT_TYPE' => 'application/json' }
     wipe_database
+
+    # Setup signing keys for tests
+    keypair = Flocks::SignedRequest.generate_keypair
+    Flocks::SignedRequest.setup(keypair[:verify_key], keypair[:signing_key])
   end
 
   describe 'Account Authentication' do
@@ -21,13 +25,13 @@ describe 'Test Authentication Routes' do
         username: @account_data['username'],
         password: @account_data['password']
       }
-      post 'api/v1/auth/authenticate', credentials.to_json, @req_header
 
+      signed = Flocks::SignedRequest.sign(credentials)
+
+      post 'api/v1/auth/authenticate', signed.to_json, @req_header
       _(last_response.status).must_equal 200
 
       response = JSON.parse(last_response.body)
-      # puts "DEBUG: #{response.inspect}"
-
       account_info = response['data']['attributes']['account']['attributes']
       auth_token   = response['data']['attributes']['auth_token']
 
@@ -41,11 +45,13 @@ describe 'Test Authentication Routes' do
         password: 'fakepassword'
       }
 
-      post 'api/v1/auth/authenticate', credentials.to_json, @req_header
+      signed = Flocks::SignedRequest.sign(credentials)
+
+      post 'api/v1/auth/authenticate', signed.to_json, @req_header
       result = JSON.parse(last_response.body)
 
       _(last_response.status).must_equal 403
       _(result['message'].downcase).must_include('invalid')
     end
   end
-end 
+end

@@ -132,6 +132,51 @@ The application uses Sequel ORM with SQLite. Database migration files define the
    rake db:migrate
    ```
 
+## Security Setup
+
+Before running the application, you need to generate secure keys and configure your `secrets.yml` file. A sample configuration is provided in `config/secrets_example.yml`. Copy this file to `secrets.yml`:
+
+```
+cp config/secrets_example.yml config/secrets.yml
+```
+
+Then, fill in the required secure keys using the following Rake tasks:
+
+### Generate Security Keys
+
+To generate cryptographic keys, run the tasks below. Copy the printed output into the corresponding fields in your `secrets.yml`.
+
+#### Database Encryption Key
+
+Generates a base64-encoded key for encrypting database fields:
+
+```
+rake newkey:db
+# Output: DB_KEY: wJq3hPzZTx...
+```
+
+#### Message Encryption Key
+
+Generates a key for encrypting user messages and locations:
+
+```
+rake newkey:msg
+# Output: MSG_KEY: 2rVc09xMKn...
+```
+
+#### Signing and Verification Key Pair
+
+Generates a key pair used for signing and verifying secure communications:
+
+```
+rake newkey:signing
+# Output:
+# SIGNING_KEY: aL9fWk3qs...
+# VERIFY_KEY: G8zKy1Pqa...
+```
+
+Paste the keys into the relevant section of your `config/secrets.yml` for each environment (development, test, production).
+
 ## Usage
 
 ### Running the Application
