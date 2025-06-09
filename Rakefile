@@ -113,8 +113,8 @@ namespace :newkey do
   end
 
   desc 'Create sample sign/verify keypair for signed communication'
-  task signing: :load_libs do
-    keypair = SignedRequest.generate_keypair
+  task :signing => :load_libs do
+    keypair = Flocks::SignedRequest.generate_keypair
 
     puts "SIGNING_KEY: #{keypair[:signing_key]}"
     puts " VERIFY_KEY: #{keypair[:verify_key]}"
