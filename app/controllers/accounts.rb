@@ -37,7 +37,7 @@ module Flocks
         response['Location'] = "#{@account_route}/#{new_account.id}"
         { message: 'Account created', data: new_account }.to_json
       rescue Sequel::MassAssignmentRestriction
-        Api.logger.warn "MASS-ASSIGNMENT:: #{new_data.keys}"
+        Api.logger.warn "MASS-ASSIGNMENT:: #{account_data.keys}"
         routing.halt 400, { message: 'Illegal Request' }.to_json
       rescue StandardError => e
         Api.logger.error 'Unknown error saving account'

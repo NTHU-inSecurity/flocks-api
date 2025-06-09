@@ -10,8 +10,8 @@ describe 'Test Account Handling' do
     wipe_database
 
     # Setup signing keys for specs
-    keypair = Flocks::SignedRequest.generate_keypair
-    Flocks::SignedRequest.setup(keypair[:verify_key], keypair[:signing_key])
+    keypair = SignedRequest.generate_keypair
+    SignedRequest.setup(keypair[:verify_key], keypair[:signing_key])
   end
 
   describe 'Account information' do
@@ -25,7 +25,7 @@ describe 'Test Account Handling' do
         password: account_data['password']
       }
 
-      signed = Flocks::SignedRequest.sign(credentials)
+      signed = SignedRequest.sign(credentials)
       post 'api/v1/auth/authenticate', signed.to_json, @req_header
 
       _(last_response.status).must_equal 200
@@ -52,7 +52,9 @@ describe 'Test Account Handling' do
     end
 
     it 'HAPPY: should be able to create new accounts' do
-      post 'api/v1/accounts', @account_data.to_json, @req_header
+      signed_data = SignedRequest.sign(@account_data)
+      post 'api/v1/accounts', signed_data.to_json, @req_header
+
       _(last_response.status).must_equal 201
       _(last_response.headers['Location'].size).must_be :>, 0
 
@@ -67,7 +69,9 @@ describe 'Test Account Handling' do
     it 'BAD: should not create account with illegal attributes' do
       bad_data = @account_data.clone
       bad_data['created_at'] = '1900-01-01'
-      post 'api/v1/accounts', bad_data.to_json, @req_header
+      signed_bad_data = SignedRequest.sign(bad_data)
+
+      post 'api/v1/accounts', signed_bad_data.to_json, @req_header
 
       _(last_response.status).must_equal 400
       _(last_response.headers['Location']).must_be_nil

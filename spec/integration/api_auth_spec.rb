@@ -10,8 +10,8 @@ describe 'Test Authentication Routes' do
     wipe_database
 
     # Setup signing keys for tests
-    keypair = Flocks::SignedRequest.generate_keypair
-    Flocks::SignedRequest.setup(keypair[:verify_key], keypair[:signing_key])
+    keypair = SignedRequest.generate_keypair
+    SignedRequest.setup(keypair[:verify_key], keypair[:signing_key])
   end
 
   describe 'Account Authentication' do
@@ -26,7 +26,7 @@ describe 'Test Authentication Routes' do
         password: @account_data['password']
       }
 
-      signed = Flocks::SignedRequest.sign(credentials)
+      signed = SignedRequest.sign(credentials)
 
       post 'api/v1/auth/authenticate', signed.to_json, @req_header
       _(last_response.status).must_equal 200
@@ -45,7 +45,7 @@ describe 'Test Authentication Routes' do
         password: 'fakepassword'
       }
 
-      signed = Flocks::SignedRequest.sign(credentials)
+      signed = SignedRequest.sign(credentials)
 
       post 'api/v1/auth/authenticate', signed.to_json, @req_header
       result = JSON.parse(last_response.body)
