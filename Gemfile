@@ -9,6 +9,7 @@ gem 'json'
 gem 'logger', '~>1.0'
 gem 'puma', '~>6.0'
 gem 'roda', '~>3.0'
+gem 'http'
 
 # CONFIGURATION
 gem 'figaro', '~>1.2'

@@ -86,7 +86,8 @@ describe 'Test Bird Handling' do
 
       _(last_response.status).must_equal 201
       _(last_response.headers['Location'].size).must_be :>, 0
-      bird_attrs = JSON.parse(last_response.body).dig('data', 'relationships', 'birds', 0, 'data', 'attributes')
+      #bird_attrs = JSON.parse(last_response.body).dig('data', 'relationships', 'birds', 0, 'data', 'attributes')
+      bird_attrs = JSON.parse(last_response.body)['data']['attributes']
       _(bird_attrs['message']).must_equal @bird_data[:message]
     end
 

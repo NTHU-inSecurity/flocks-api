@@ -144,7 +144,7 @@ module Flocks
         response.status = 201
         response['Location'] = "#{@flock_route}/#{new_flock.id}"
         { message: 'Flock saved', data: new_flock }.to_json
-      rescue RequestLatLonFromGoogle::GoogleApiError
+      rescue RequestLatLonFromGoogle::GoogleApiError => e
         Api.logger.error "GOOGLE API ERROR: #{e.message}"
         routing.halt 400, { message: 'Could not process the link' }.to_json
       rescue AddBirdToFlock::NotFoundError
